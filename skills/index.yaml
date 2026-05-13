@@ -1,0 +1,18 @@
+name: skill_index
+description: Minimal skill index for progressive disclosure. Agent calls load_skill to get full details.
+prompt_extension: |
+  ## Available Skills (call load_skill to get details)
+  You have a `load_skill` tool. Call it with a skill name to load full usage instructions.
+  Do NOT guess API formats — always load_skill first.
+
+  | Skill | Description | When to use |
+  |-------|-------------|-------------|
+  | device | Device/system capability card | Settings, screenshots, low-risk device checks |
+  | environment | Preinstalled runtime and CLI examples | Check available Python/system tools |
+  | file | File processing helpers | PDF, Word, Excel, image, and archive tasks |
+  | websearch | Generic web search bridge | Search or retrieve web information |
+  | github | GitHub repository/issue/PR operations | Inspect or update GitHub artifacts |
+
+  ### Host Proxy
+  Some tools can run on the host through an HTTP proxy. After loading a skill,
+  follow its instructions and keep credentials in environment variables.

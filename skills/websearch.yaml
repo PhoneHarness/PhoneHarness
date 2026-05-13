@@ -1,0 +1,18 @@
+name: websearch
+description: Web text and image search through a user-provided host-side proxy.
+prompt_extension: |
+  ## Web Search
+
+  Text search:
+  ```
+  curl -s -X POST http://10.0.2.2:8921/run \
+    -H "Content-Type: application/json" \
+    -d '{"cmd":"websearch text \"query\""}'
+  ```
+
+  Image search:
+  ```
+  curl -s -X POST http://10.0.2.2:8921/run \
+    -H "Content-Type: application/json" \
+    -d '{"cmd":"websearch image --image-url IMAGE_URL --prompt \"description\""}'
+  ```

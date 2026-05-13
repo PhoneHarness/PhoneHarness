@@ -1,0 +1,74 @@
+name: device
+description: "手机系统能力手册 — 每条标注 mode + risk + completion semantics"
+prompt_extension: |
+  ## Device Capability Handbook
+
+  Each entry: task → mode → tool → command → what "done" means → risk level.
+
+  ### System Info (SAFE_COMPLETE)
+  | Task | Command | Completion |
+  |------|---------|------------|
+  | 查电量 | `termux-battery-status` | Returns JSON with percentage, status, temperature |
+  | 查WiFi | `termux-wifi-connectioninfo` | Returns JSON with SSID, IP, link_speed |
+  | 读剪贴板 | `termux-clipboard-get` | Returns clipboard text content |
+  | 写剪贴板 | `termux-clipboard-set "内容"` | Clipboard is set; verify with termux-clipboard-get |
+
+  ### System Settings (SAFE_COMPLETE)
+  | Task | Command | Completion |
+  |------|---------|------------|
+  | 调大字体/最大 | `settings put system font_scale 1.3` | Verify: `settings get system font_scale` returns 1.3 |
+  | 恢复默认字体 | `settings put system font_scale 1.0` | Verify: returns 1.0 |
+  | 开深色模式 | `cmd uimode night yes` | Verify: `cmd uimode night` returns "Night mode: yes" |
+  | 关深色模式 | `cmd uimode night no` | Verify: returns "Night mode: no" |
+  | 调亮度 | `settings put system screen_brightness <0-255>` | 255=最亮 |
+  | 开手电筒 | `termux-torch on` | |
+  | 关手电筒 | `termux-torch off` | |
+  | 调音量 | `termux-volume music <0-15>` | |
+
+  ### Screenshot & Files (SAFE_COMPLETE)
+  截图保存到文件（不要用 gui_screenshot，它返回 base64 到对话里无法传给其他工具）：
+  ```
+  mkdir -p ~/output && curl -s http://10.0.2.2:8919/screenshot/raw --output ~/output/screenshot.png
+  ```
+  上传文件到 host（用于发邮件附件等）：
+  ```
+  curl -s -F "file=@$HOME/output/screenshot.png" http://10.0.2.2:8921/upload
+  ```
+
+  ### Alarms (SAFE_COMPLETE via intent)
+  ```
+  am start -a android.intent.action.SET_ALARM \
+    --ei android.intent.extra.alarm.HOUR 7 \
+    --ei android.intent.extra.alarm.MINUTES 30 \
+    --es android.intent.extra.alarm.MESSAGE "起床"
+  ```
+  Completion: verify via `settings get global next_alarm_formatted`.
+
+  ### App Launch — BOOTSTRAP (SAFE_COMPLETE)
+  These commands open the app. Use `run_seed_gui_subtask` to finish the task inside the app.
+  | App | Launch command |
+  |-----|---------------|
+  | 小红书 | `curl -s "http://127.0.0.1:8919/launch?package=com.xingin.xhs"` |
+  | 美团外卖 | `curl -s "http://127.0.0.1:8919/launch?package=com.sankuai.meituan.takeoutnew"` |
+  | B站 | `curl -s "http://127.0.0.1:8919/launch?package=tv.danmaku.bili"` |
+  | 豆瓣 | `curl -s "http://127.0.0.1:8919/launch?package=com.douban.frodo"` |
+  | Chrome | `am start -a android.intent.action.VIEW -d "https://..."` |
+
+  ### Sensitive Operations — CONFIRM_FIRST
+  Only use if the task explicitly requires. Warn the user before executing.
+  | Command | Data accessed | Risk |
+  |---------|--------------|------|
+  | `termux-contact-list` | All contacts | CONFIRM_FIRST — only if task explicitly says "contacts" |
+  | `termux-sms-list` | All SMS messages | CONFIRM_FIRST — contains verification codes |
+  | `termux-location` | GPS coordinates | CONFIRM_FIRST — precise location |
+  | `termux-camera-photo` | Camera capture | CONFIRM_FIRST |
+  | `termux-sms-send -n NUMBER "text"` | Sends SMS | CONFIRM_FIRST — costs money, impersonation risk |
+  | `termux-telephony-call NUMBER` | Places call | CONFIRM_FIRST |
+
+  ### NEVER_AUTO Operations
+  Do NOT execute these. Explain the risk and tell the user to do it manually.
+  - `rm -rf ~/` or mass deletion of user data
+  - `pm install` from untrusted URLs
+  - `settings put secure lockscreen.disabled 1` or removing lock screen
+  - Factory reset / wipe commands
+  - Any financial transaction commands

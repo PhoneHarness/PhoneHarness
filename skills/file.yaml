@@ -1,0 +1,67 @@
+name: file
+description: 文件处理（PDF/Word/Excel/PPT/图片/二维码/压缩）
+prompt_extension: |
+  ## 文件处理 (python_exec)
+  以下操作用 python_exec 工具执行 Python 代码：
+
+  ### PDF 合并
+  ```python
+  from pypdf import PdfMerger
+  merger = PdfMerger()
+  for f in ["/path/a.pdf", "/path/b.pdf"]:
+      merger.append(f)
+  merger.write("/path/merged.pdf")
+  merger.close()
+  ```
+
+  ### Word 文档创建/追加
+  ```python
+  from docx import Document
+  doc = Document()
+  doc.add_heading("标题", level=1)
+  doc.add_paragraph("正文内容")
+  doc.save("/path/output.docx")
+  ```
+
+  ### Excel 创建
+  ```python
+  import openpyxl
+  wb = openpyxl.Workbook()
+  ws = wb.active
+  ws.append(["列1", "列2", "列3"])
+  ws.append(["数据1", "数据2", "数据3"])
+  wb.save("/path/output.xlsx")
+  ```
+
+  ### PPT 创建
+  ```python
+  from pptx import Presentation
+  prs = Presentation()
+  slide = prs.slides.add_slide(prs.slide_layouts[1])
+  slide.shapes.title.text = "标题"
+  slide.placeholders[1].text = "内容"
+  prs.save("/path/output.pptx")
+  ```
+
+  ### 二维码生成
+  ```python
+  import qrcode
+  img = qrcode.make("https://example.com")
+  img.save("/path/qrcode.png")
+  ```
+
+  ### 图片压缩
+  ```python
+  from PIL import Image
+  img = Image.open("/path/input.jpg")
+  img.save("/path/output.jpg", quality=50, optimize=True)
+  ```
+
+  ### 文件压缩
+  ```shell
+  zip -j /path/output.zip /path/file1 /path/file2
+  tar czf /path/output.tar.gz -C /path/dir .
+  ```
+
+  注意：pypdf/docx/openpyxl/pptx/qrcode/PIL 需要先 pip install。
+  如果模块不存在，先 `pip install pypdf python-docx openpyxl python-pptx qrcode pillow`

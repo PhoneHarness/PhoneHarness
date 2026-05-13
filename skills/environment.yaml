@@ -1,0 +1,31 @@
+name: environment
+description: "预装环境详情、库选择指南、CLI 使用示例"
+prompt_extension: |
+  ## Pre-installed Environment
+
+  Python 3 with: requests, python-docx, python-pptx, openpyxl, pypdf, pdfplumber,
+  Pillow, qrcode, reportlab, beautifulsoup4, lxml, xlsxwriter, cryptography.
+  System tools: tesseract (eng + chi_sim), ffmpeg, curl, git, node.
+
+  ### Library Selection (IMPORTANT)
+  - Charts/graphs: use `reportlab` (matplotlib is NOT available)
+  - PDF merge/encrypt: use `pypdf` (NOT PyPDF2)
+  - Excel: use `openpyxl` (NOT pandas)
+  - Word: use `python-docx`
+  - PPT: use `python-pptx`
+
+  ### CLI Examples
+  shell_exec is your primary tool:
+  - `curl -s <url>` for HTTP requests
+  - `curl -s <url> | python3 -c "import sys,json; ..."` for data extraction
+  - `ls`, `cat`, `head`, `wc` for file operations
+  - `python3 script.py` for saved scripts
+
+  python_exec is only for multi-line file generation (Word/Excel/PPT/PDF).
+  Even then, fetch data with shell_exec first.
+
+  ### Step-by-step pattern
+  1. shell_exec: fetch data
+  2. shell_exec: inspect/verify
+  3. python_exec: generate output file
+  4. shell_exec: verify file exists

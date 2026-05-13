@@ -1,0 +1,42 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local credentials and runtime configuration
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.keystore
+
+# Android / APK build outputs
+*.apk
+*.idsig
+vdisplay-helper/build/
+
+# Runtime artifacts and traces
+artifacts/
+results/
+traces/
+tmp-validation/
+generated-images/
+office-output/
+
+# Generated viewers / temporary files
+chat.html
+*.tmp
+*.bak
+*~
+~$*

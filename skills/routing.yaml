@@ -1,0 +1,86 @@
+name: routing
+description: "First-turn routing card. Injected at startup, visible BEFORE any load_skill call."
+prompt_extension: |
+  ## Routing Card (Deterministic-First)
+
+  Before choosing a tool, consult this table. If a match exists, follow it exactly.
+  If no match, fall back to the priority order in the system prompt.
+
+  ### REAL APP BENCHMARK RULE
+  If the user explicitly asks to open/use/go to a named real Android app, this is a GUI task.
+  Do not replace the real-app step with MCP/CLI/web results only. CLI/MCP can gather supporting
+  information, but the named app must be launched with its real package and the in-app work must
+  be delegated to `run_seed_gui_subtask`.
+
+  Required pattern:
+  1. Launch the named app with `curl -s "http://127.0.0.1:8919/launch?package=<real_package>"`.
+  2. Call `run_seed_gui_subtask` with a concrete goal that includes the app name and exact user request.
+  3. For multi-app tasks, repeat this for each named real app instead of only summarizing with CLI.
+
+  Common public package examples: Bilibili=tv.danmaku.bili,
+  Xiaohongshu=com.xingin.xhs, Weibo=com.sina.weibo,
+  Keep=com.gotokeep.keep, Zhihu=com.zhihu.android,
+  Amap=com.autonavi.minimap, Baidu Maps=com.baidu.BaiduMap,
+  WPS=cn.wps.moffice_eng, iQIYI=com.qiyi.video.
+
+  ### COMPLETE — one CLI command finishes the task
+  | Task pattern | Command | Notes |
+  |---|---|---|
+  | 查电量/电池 | `termux-battery-status` | Returns JSON |
+  | 查WiFi名称/信号 | `termux-wifi-connectioninfo` | Returns JSON |
+  | 调大字体/字体最大 | `settings put system font_scale 1.3` | 1.0=默认, 1.3=最大 |
+  | 恢复默认字体 | `settings put system font_scale 1.0` | |
+  | 开深色模式 | `cmd uimode night yes` | |
+  | 关深色模式 | `cmd uimode night no` | |
+  | 调亮度 | `settings put system screen_brightness <0-255>` | 255=最亮 |
+  | 开/关手电筒 | `termux-torch on` / `termux-torch off` | |
+  | 调音量 | `termux-volume music <0-15>` | |
+  | 读剪贴板 | `termux-clipboard-get` | |
+  | 写剪贴板 | `termux-clipboard-set "文本"` | |
+  | 截图保存到文件 | `curl -s http://127.0.0.1:8919/screenshot/raw -o ~/output/screenshot.png` | 先 mkdir -p ~/output |
+
+  ### COMPLETE via load_skill — CLI finishes, but need API format first
+  | Task pattern | Step 1 | Step 2 |
+  |---|---|---|
+  | web search / information lookup | `load_skill("websearch")` | `shell_exec(curl host proxy ...)` per skill doc |
+
+  ### INTENT_ONLY — opens a UI, does NOT complete the task
+  These tools only launch an Android intent/composer. The task is NOT done after calling them.
+  You usually need `run_seed_gui_subtask` or manual verification to actually finish.
+  | Tool | What it does | What it does NOT do |
+  |---|---|---|
+  | `send_email` | Opens email composer with pre-filled fields | Does NOT actually send; use load_skill("email") for real send |
+  | `create_calendar_event` | Opens calendar with pre-filled event | Does NOT save; works on most devices but verify if critical |
+  | `open_settings` | Opens Settings app | Does NOT change any setting |
+  | `open_browser` | Opens URL in Chrome | Does NOT extract page content |
+  | `show_map` | Opens Maps app | Does NOT navigate or search |
+  | `dial_phone` | Opens phone dialer | Does NOT place the call |
+
+  ### BOOTSTRAP — CLI opens entry, then GUI interaction to finish
+  Use the bootstrap command first, then do the GUI part according to your current GUI mode.
+  (Delegated mode: `run_seed_gui_subtask`. Flat mode: `gui_screenshot` → observe → `gui_tap`/`gui_type`.)
+  | Task pattern | Bootstrap command | GUI goal |
+  |---|---|---|
+  | 设闹钟 | `am start -a android.intent.action.SET_ALARM --ei android.intent.extra.alarm.HOUR <H> --ei android.intent.extra.alarm.MINUTES <M>` | Verify via screenshot or `settings get global next_alarm_formatted` |
+  | public app search/browse | `curl -s "http://127.0.0.1:8919/launch?package=<package.name>"` | Search/scroll/interact in the real app |
+  | named real app task | launch the named real app first, then `run_seed_gui_subtask` | Do not replace explicit real-app work with MCP/CLI only |
+  | 打开WiFi设置 | `am start -a android.settings.WIFI_SETTINGS` | Select/connect WiFi network |
+  | 打开显示设置 | `am start -a android.settings.DISPLAY_SETTINGS` | Only if no COMPLETE entry above covers the task |
+
+  ### Risk levels for sensitive operations
+  | Operation | Risk | Handling |
+  |---|---|---|
+  | 查电量/WiFi/亮度/音量 | SAFE_COMPLETE | Execute directly |
+  | 调字体/深色模式/亮度 | SAFE_COMPLETE | Execute directly |
+  | websearch | SAFE_COMPLETE | Execute directly |
+  | 设闹钟/日历事件 | SAFE_COMPLETE | Execute directly |
+  | 打开app搜索/浏览 | SAFE_COMPLETE | Execute directly |
+  | 删除文件 (用户指定的) | CONFIRM_FIRST | Confirm scope before executing |
+  | 批量导出通讯录/短信 | CONFIRM_FIRST | Warn privacy risk, ask user to confirm |
+  | 分享位置给多人 | CONFIRM_FIRST | Warn, ask confirmation |
+  | 群发消息/冒充发消息 | NEVER_AUTO | Refuse, explain risk, let user do manually |
+  | 恢复出厂设置/清空数据 | NEVER_AUTO | Refuse, suggest alternatives |
+  | 下载未知来源APK | NEVER_AUTO | Refuse, suggest app store |
+  | 金融交易/转账 | NEVER_AUTO | Refuse, let user do manually |
+  | 关闭锁屏密码 | NEVER_AUTO | Refuse, explain security risk |
+  | 读取通讯录/短信/位置 | CONFIRM_FIRST | Only if task explicitly requires; warn first |

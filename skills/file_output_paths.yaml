@@ -1,0 +1,22 @@
+name: file_output_paths
+description: Guide agent to save output files to /sdcard/tmp/ for benchmark verification.
+prompt_extension: |
+  ## File Path Rules
+  IMPORTANT: Termux shell_exec CANNOT access /sdcard/ (Android scoped storage restriction).
+  Use Termux home paths instead:
+  - Download directory: ~/Download/ (NOT /sdcard/Download/)
+  - Output directory: ~/output/ (create with mkdir -p ~/output/)
+  - Temp files: $TMPDIR or ~/tmp/
+
+  When saving/generating files:
+  - If the task specifies an exact path, use that path exactly.
+  - Otherwise save to ~/output/
+  - Before writing, ensure the directory exists: `mkdir -p ~/output`
+  - After writing, verify the file exists: `ls -la <output_path>`
+
+  When looking for downloaded files/images:
+  - Search ~/Download/ first (this is where test images are placed)
+  - Use `find ~/Download -type f -iname "*.jpg" -o -iname "*.png"` to find images
+allowed_tools:
+  - shell_exec
+  - python_exec
