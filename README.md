@@ -137,7 +137,7 @@ phoneharness/
 ```bibtex
 @misc{phoneharness2026,
   title = {PhoneHarness: A Mixed-Action Orchestration Harness and Benchmark for Phone Agents across CLI, GUI, and MCP Tools},
-  author = {Li, Chenxin and Fang, Zhengyao and Tang, Zhengyang and Lyu, Pengyuan and Zhou, Xingran and Lai, Xin and Tang, Fei and Wu, Liang and Guo, Yiduo and Wang, Weinong and Li, Junyi and Zhang, Yi and Ding, Yang and Shen, Huawen and Fan, Sunqi and Peng, Shangpin and Ruan, Zheng and Zhang, Anran and Wang, Benyou and Zhang, Chengquan and Hu, Han},
+  author = {Jason Li and PhoneHarness Team},
   year = {2026},
   url = {https://phoneharness.github.io}
 }
