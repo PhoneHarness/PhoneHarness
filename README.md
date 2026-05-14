@@ -11,8 +11,7 @@
 <p align="center">
   <a href="https://phoneharness.github.io">🏠 Homepage</a> •
   <a href="https://huggingface.co/datasets/PhoneHarness/phoneharness-bench">🤗 HF Dataset</a> •
-  <a href="#-quick-start">🚀 Quick Start</a> •
-  <a href="#-citation">📚 Citation</a>
+  <a href="#-quick-start">🚀 Quick Start</a>
 </p>
 
 <p align="center">
@@ -130,15 +129,4 @@ phoneharness/
 ├── scripts/                 # Emulator, GUI proxy, trace viewer, and helper scripts
 ├── tests/                   # Unit tests for adapters and harness behavior
 └── vdisplay-helper/         # Virtual-display helper source
-```
-
-## 📚 Citation
-
-```bibtex
-@misc{phoneharness2026,
-  title = {PhoneHarness: A Mixed-Action Orchestration Harness and Benchmark for Phone Agents across CLI, GUI, and MCP Tools},
-  author = {Jason Li and PhoneHarness Team},
-  year = {2026},
-  url = {https://phoneharness.github.io}
-}
 ```
