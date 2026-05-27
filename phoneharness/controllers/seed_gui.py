@@ -15,10 +15,17 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import re
 import time
 from typing import Any, Callable
 from urllib import error, parse, request
+
+from ..model.client import (
+    _chat_payload_to_responses_payload,
+    _normalize_api_format,
+    _responses_payload_to_chat_payload,
+)
 
 _TRANSIENT_HTTP_CODES = {404, 429, 500, 502, 503, 504}
 
@@ -243,15 +250,30 @@ def _call_llm(api_url: str, api_key: str, model: str, messages: list[dict],
         body["extra_body"] = {"skip_special_tokens": False}
     else:
         body["reasoning_effort"] = "high"
-    payload = json.dumps(body, ensure_ascii=False).encode("utf-8")
-
     base_url = api_url.rstrip("/")
-    if base_url.endswith("/chat/completions"):
+    api_format = _normalize_api_format(
+        os.environ.get("PHONEHARNESS_OPENAI_API_FORMAT")
+        or os.environ.get("OPENAI_API_FORMAT")
+        or ("responses" if base_url.endswith("/responses") else "chat_completions")
+    )
+    if api_format == "responses":
+        request_body = _chat_payload_to_responses_payload(body)
+        if base_url.endswith("/responses"):
+            chat_url = base_url
+        elif base_url.endswith("/v1"):
+            chat_url = f"{base_url}/responses"
+        else:
+            chat_url = f"{base_url}/v1/responses"
+    elif base_url.endswith("/chat/completions"):
+        request_body = body
         chat_url = base_url
     elif base_url.endswith("/v1"):
+        request_body = body
         chat_url = f"{base_url}/chat/completions"
     else:
+        request_body = body
         chat_url = f"{base_url}/v1/chat/completions"
+    payload = json.dumps(request_body, ensure_ascii=False).encode("utf-8")
 
     raw = ""
     data: dict[str, Any] = {}
@@ -266,6 +288,8 @@ def _call_llm(api_url: str, api_key: str, model: str, messages: list[dict],
             with request.urlopen(req, timeout=180) as resp:
                 raw = resp.read().decode("utf-8")
             data = json.loads(raw)
+            if api_format == "responses":
+                data = _responses_payload_to_chat_payload(data)
             break
         except error.HTTPError as exc:
             raw = exc.read().decode("utf-8", errors="replace")
@@ -299,7 +323,6 @@ def _call_llm(api_url: str, api_key: str, model: str, messages: list[dict],
 
 # Direct controller fallback for standalone runs. Main phoneharness surfaces pass
 # these explicitly and should not rely on implicit defaults.
-import os
 DEFAULT_LLM_URL = os.environ.get("SEED_LLM_URL")
 DEFAULT_LLM_KEY = os.environ.get("SEED_LLM_KEY")
 DEFAULT_LLM_MODEL = os.environ.get("SEED_LLM_MODEL")

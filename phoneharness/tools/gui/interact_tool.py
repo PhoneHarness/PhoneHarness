@@ -15,11 +15,17 @@ from __future__ import annotations
 import base64
 import io
 import json
+import os
 import time
 import urllib.request
 from typing import Any, Callable
 
 from ...agent.message import ToolResult
+from ...model.client import (
+    _chat_payload_to_responses_payload,
+    _normalize_api_format,
+    _responses_payload_to_chat_payload,
+)
 from ..base import BaseTool
 from .proxy_client import GUIProxyClient
 from .action_adapter import parse_seed_action, parse_autoglm_action, get_adapter, GUIAction
@@ -138,16 +144,33 @@ def _compress_to_normalized(png_b64: str) -> tuple[str, int, int]:
 def _call_llm_text(api_url: str, api_key: str, model: str,
                    messages: list[dict], max_tokens: int = 2048) -> str:
     """Call LLM in text completion mode (no tools param)."""
-    payload = json.dumps({
+    body = {
         "model": model, "messages": messages, "max_tokens": max_tokens,
-    }, ensure_ascii=False).encode("utf-8")
+    }
     base_url = api_url.rstrip("/")
-    if base_url.endswith("/chat/completions"):
+    api_format = _normalize_api_format(
+        os.environ.get("PHONEHARNESS_OPENAI_API_FORMAT")
+        or os.environ.get("OPENAI_API_FORMAT")
+        or ("responses" if base_url.endswith("/responses") else "chat_completions")
+    )
+    if api_format == "responses":
+        request_body = _chat_payload_to_responses_payload(body)
+        if base_url.endswith("/responses"):
+            chat_url = base_url
+        elif base_url.endswith("/v1"):
+            chat_url = f"{base_url}/responses"
+        else:
+            chat_url = f"{base_url}/v1/responses"
+    elif base_url.endswith("/chat/completions"):
+        request_body = body
         chat_url = base_url
     elif base_url.endswith("/v1"):
+        request_body = body
         chat_url = f"{base_url}/chat/completions"
     else:
+        request_body = body
         chat_url = f"{base_url}/v1/chat/completions"
+    payload = json.dumps(request_body, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
         chat_url,
         data=payload,
@@ -155,6 +178,8 @@ def _call_llm_text(api_url: str, api_key: str, model: str,
     )
     with urllib.request.urlopen(req, timeout=60) as resp:
         result = json.loads(resp.read())
+    if api_format == "responses":
+        result = _responses_payload_to_chat_payload(result)
     return result["choices"][0]["message"]["content"]
 
 
