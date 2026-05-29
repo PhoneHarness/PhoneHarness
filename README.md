@@ -78,6 +78,12 @@ orchestration model (--model)
 
 ## 🚀 Quick Start
 
+For a reproducible Android Emulator environment, start with
+[`docs/emulator-setup.md`](docs/emulator-setup.md). The reference setup is a
+Pixel 6 / API 33 / 32G-data AVD with Termux, Termux:API, ADBKeyboard, and
+PhoneHarness host/device port wiring via `scripts/create_avd.sh`,
+`scripts/install_apps.sh`, and `scripts/setup_emulator.sh`.
+
 ### 1. 🔐 Configure model credentials
 
 PhoneHarness expects OpenAI-compatible chat-completions endpoints. Export credentials in your shell or secret manager.
@@ -124,6 +130,8 @@ python3 scripts/trace2html_all.py path/to/trace-directory
 
 ```text
 phoneharness/
+├── config/                  # Example app manifests for reproducible emulator setup
+├── docs/                    # Demos and setup notes
 ├── phoneharness/            # Runtime package for the server, agent loop, tools, and GUI controllers
 ├── skills/                  # Runtime routing cards and progressive skill-disclosure YAMLs
 ├── scripts/                 # Emulator, GUI proxy, trace viewer, and helper scripts

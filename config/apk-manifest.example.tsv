@@ -1,0 +1,23 @@
+# name	package	source	sha256
+# Fields are tab-separated.
+# source may be a local path, file:// URL, or https:// URL.
+# Use "-" for sha256 when a checksum is not available yet.
+#
+# APKs are not committed by default. Put legally obtained local APKs under
+# assets/apks/ or use official release URLs.
+#
+# Baseline examples:
+termux	com.termux	assets/apks/termux.apk	-
+termux-api	com.termux.api	assets/apks/termux-api.apk	-
+adbkeyboard		assets/apks/ADBKeyboard.apk	-
+vdhelper	com.phoneharness.vdhelper	vdisplay-helper/build/vdhelper.apk	-
+#
+# Optional real-app package names. Fill source and sha256 locally if needed.
+bilibili	tv.danmaku.bili		-
+xiaohongshu	com.xingin.xhs		-
+qq-browser	com.tencent.mtt		-
+meituan	com.sankuai.meituan		-
+meituan-waimai	com.sankuai.meituan.takeoutnew		-
+tencent-map	com.tencent.map		-
+kuwo	cn.kuwo.player		-
+weread	com.tencent.weread		-
