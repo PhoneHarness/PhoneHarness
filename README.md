@@ -24,6 +24,14 @@
 
 PhoneHarness is a phone-agent evaluation stack for workflows that cannot be represented as pure GUI navigation. Agents run against Android emulators, operate through device-side tools and host-side proxies, and are graded by verifiable evidence such as files, system settings, app state, and safety side-effect checks.
 
+## 🚨🔥🗞️ News 🗞️🔥🚨
+
+- 📱🤖✨ **[2026.05.29]** Phone-native agents are moving fast! We are tracking the latest phone-agent demos, native-phone workflows, and "metaverse-native phone" ideas as they land, because this space is now changing almost every day.
+- 🚀📣🧠 **[2026.05.29]** We are excited to share Xinzhiyuan's coverage of the broader phone-agent wave and why GUI + tool + device-native orchestration is becoming so interesting: [read the WeChat article](https://mp.weixin.qq.com/s/I2ztL6sFiHGxAiCfh_FTqg).
+- 🛠️📲⚡ **[2026.05.29]** Reproducible emulator setup is now documented: Pixel 6 / API 33 / 32G-data AVD, Termux, Termux:API, ADBKeyboard, app manifests, and PhoneHarness host-device port wiring.
+
+More updates are collected in [`docs/news.md`](docs/news.md). Fresh phone-agent projects, papers, demos, and native-phone infrastructure are welcome!
+
 ## 🎬 Demos
 
 <table>
@@ -53,18 +61,6 @@ PhoneHarness Bench is released as a Hugging Face dataset:
 https://huggingface.co/datasets/PhoneHarness/phoneharness-bench
 
 The dataset contains the task definitions and metadata used by the paper. Keep generated traces and local run outputs out of git unless you intentionally publish an artifact snapshot.
-
-## 🗞️ News
-
-Phone-native agents are moving fast. We track the latest phone-agent demos,
-native-phone workflows, and "metaverse-native phone" ideas as they land, because
-this space is now changing almost every day.
-
-- **Xinzhiyuan feature**: a WeChat article spotlighting the broader phone-agent
-  wave and why GUI + tool + device-native orchestration is becoming exciting:
-  [read the article](https://mp.weixin.qq.com/s/I2ztL6sFiHGxAiCfh_FTqg).
-
-More updates are collected in [`docs/news.md`](docs/news.md).
 
 ## 🧩 Architecture
 
