@@ -11,6 +11,7 @@
 <p align="center">
   <a href="https://phoneharness.github.io">🏠 Homepage</a> •
   <a href="https://huggingface.co/datasets/PhoneHarness/phoneharness-bench">🤗 HF Dataset</a> •
+  <a href="#-news">🗞️ News</a> •
   <a href="#-quick-start">🚀 Quick Start</a>
 </p>
 
@@ -52,6 +53,18 @@ PhoneHarness Bench is released as a Hugging Face dataset:
 https://huggingface.co/datasets/PhoneHarness/phoneharness-bench
 
 The dataset contains the task definitions and metadata used by the paper. Keep generated traces and local run outputs out of git unless you intentionally publish an artifact snapshot.
+
+## 🗞️ News
+
+Phone-native agents are moving fast. We track the latest phone-agent demos,
+native-phone workflows, and "metaverse-native phone" ideas as they land, because
+this space is now changing almost every day.
+
+- **Xinzhiyuan feature**: a WeChat article spotlighting the broader phone-agent
+  wave and why GUI + tool + device-native orchestration is becoming exciting:
+  [read the article](https://mp.weixin.qq.com/s/I2ztL6sFiHGxAiCfh_FTqg).
+
+More updates are collected in [`docs/news.md`](docs/news.md).
 
 ## 🧩 Architecture
 
