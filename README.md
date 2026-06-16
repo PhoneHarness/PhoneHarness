@@ -11,6 +11,7 @@
 <p align="center">
   <a href="https://phoneharness.github.io">🏠 Homepage</a> •
   <a href="https://arxiv.org/abs/2606.14832">📄 Paper</a> •
+  <a href="https://huggingface.co/papers/2606.14832">🤗 HF Paper</a> •
   <a href="https://huggingface.co/datasets/PhoneHarness/phoneharness-bench">🤗 HF Dataset</a> •
   <a href="#-news">🗞️ News</a> •
   <a href="#-quick-start">🚀 Quick Start</a>
@@ -19,6 +20,7 @@
 <p align="center">
   <a href="https://phoneharness.github.io"><img alt="Homepage" src="https://img.shields.io/badge/Homepage-Visit-blue"></a>
   <a href="https://arxiv.org/abs/2606.14832"><img alt="Paper" src="https://img.shields.io/badge/arXiv-2606.14832-b31b1b"></a>
+  <a href="https://huggingface.co/papers/2606.14832"><img alt="HF Paper" src="https://img.shields.io/badge/HF%20Paper-Daily%20Papers-yellow"></a>
   <a href="https://huggingface.co/datasets/PhoneHarness/phoneharness-bench"><img alt="HF Dataset" src="https://img.shields.io/badge/HF%20Dataset-phoneharness--bench-yellow"></a>
   <img alt="Action space" src="https://img.shields.io/badge/actions-CLI%20%7C%20GUI%20%7C%20MCP-orange">
   <img alt="Trace" src="https://img.shields.io/badge/traces-auditable-purple">
