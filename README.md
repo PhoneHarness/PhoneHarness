@@ -64,7 +64,17 @@ PhoneHarness Bench is released as a Hugging Face dataset:
 
 https://huggingface.co/datasets/PhoneHarness/phoneharness-bench
 
-The dataset contains the task definitions and metadata used by the paper. Keep generated traces and local run outputs out of git unless you intentionally publish an artifact snapshot.
+The dataset contains the task definitions and metadata used by the paper. This
+runtime repository intentionally keeps generated traces, local run outputs,
+third-party APKs, logged-in app state, emulator snapshots, and private
+host-service deployments out of git. Use [`docs/required-apps.md`](docs/required-apps.md)
+and [`docs/emulator-setup.md`](docs/emulator-setup.md) to reconstruct the
+environment with locally obtained apps and credentials.
+
+Some paper-scale benchmark runners and service deployments depend on that local
+environment. For a repository-local smoke test of the GUI path, use
+`scripts/run_gui_direct_smoke.py`; `scripts/gui_preflight.py` requires the
+benchmark release package that provides `benchmark/run_hybrid_bench.py`.
 
 ## 🧩 Architecture
 

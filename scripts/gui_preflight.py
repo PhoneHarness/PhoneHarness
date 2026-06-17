@@ -12,6 +12,13 @@ RUNNER = ROOT / "benchmark" / "run_hybrid_bench.py"
 
 
 def _load_runner():
+    if not RUNNER.exists():
+        raise RuntimeError(
+            f"{RUNNER} is not part of the public runtime repository. "
+            "Install or download the benchmark release package before running "
+            "gui_preflight, or use scripts/run_gui_direct_smoke.py for a "
+            "repository-local GUI connectivity check."
+        )
     spec = importlib.util.spec_from_file_location("run_hybrid_bench", RUNNER)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load {RUNNER}")

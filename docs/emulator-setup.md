@@ -124,3 +124,19 @@ export ANDROID_HOME="$HOME/Library/Android/sdk"
 
 The virtual-display helper source builds against Android platform `android-33`
 by default and creates a 1080x1920 virtual display at 320 dpi.
+
+## Virtual Display Activity Handoff
+
+Android may move a follow-up activity back to display 0 if the target app starts
+it without display-aware launch options. PhoneHarness mitigates this only for
+explicit launches that go through `scripts/vdisplay.sh launch`, which calls
+`am start --display <id>` after `force_resizable_activities` is enabled. If an
+app internally opens another activity a few seconds later, that second launch is
+controlled by the app/Android task stack rather than by PhoneHarness.
+
+For debugging this case, run `scripts/vdisplay.sh status` and inspect
+`adb shell dumpsys activity activities` to see which display owns the resumed
+activity. When possible, relaunch the final component with
+`scripts/vdisplay.sh launch <package/activity>` or keep the workflow on display 0
+for apps that do not preserve virtual-display affinity across internal activity
+transitions.
