@@ -1,0 +1,547 @@
+# Human-curated verifiers for 4app_new (14 tasks).
+# Based on AndroidWorld philosophy: check final device state, before/after comparison,
+# fuzzy match, all rule-based, zero LLM.
+# Includes MobileAgent OSWorld-MCP TIR-inspired tool_not_called checks.
+#
+# DO NOT regenerate with generate_hybrid_bench_base_verifiers.py — this file is manually maintained.
+
+version: 2
+source_workbook: benchmark/Hybrid-Bench.xlsx
+source_sheet: 4app_new
+id_policy:
+  task_uid_format: <sheet>:<task_id>
+  collision_suffix: ':r<source_row> (only when a sheet reuses the same task_id)'
+  note: task_id is not globally unique across sheets; always key by task_uid
+scoring:
+  mode: binary
+  pass: 1
+  fail: 0
+task_pass_rule: base_verifier_pass
+verifier_types:
+  composite: Multi-check verifier; ALL checks must pass. Combines state checks, trace analysis, and TIR.
+  system_setting: Check that a system-level state reached the requested target.
+  tool_called: Check that a key tool/action was successfully invoked.
+  tool_not_called: TIR check — verify forbidden/distractor tools were NOT invoked.
+  email_sent: Check that an email side effect happened with recipient and content constraints.
+  answer_contains: Check that the final answer contains required signals.
+  answer_matches: Check that the final answer matches regex patterns.
+  gui_app_opened: Check that a specific mock app was opened during the task.
+  artifact_exists: Check that an output artifact exists with plausible extension and size.
+  artifact_content_contains: Check artifact exists AND text content contains required keywords.
+  calendar_event_created: Check that a calendar event was created with expected hints.
+  alarm_set: Check that an alarm is set on the device.
+summary:
+  sheet: 4app_new
+  task_count: 26
+  kept_count: 14
+  verifier_type_counts:
+    composite: 11
+    system_setting: 2
+    answer_contains: 1
+
+tasks:
+# ============================================================
+# A: System state checks (2 tasks) — strong, unchanged
+# ============================================================
+- task_uid: 4app_new:SC11_002
+  task_id: SC11_002
+  task_name: 调大手机字体
+  scene_category: 银发用户/无障碍场景
+  task_type: 纯GUI
+  difficulty: 简单
+  prompt: 哎呀这字太小了我看不清，帮我把手机字体调到最大呗
+  dimension_sequence: gui
+  optimal_steps: 5
+  keep_flag: 1
+  source_row: 5
+  base_verifier:
+    type: system_setting
+    params:
+      target: font_scale_max
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+
+- task_uid: 4app_new:SC09_002
+  task_id: SC09_002
+  task_name: 开启深色模式
+  scene_category: 系统快捷操作
+  task_type: 纯GUI
+  difficulty: 简单
+  prompt: 帮我把手机切换成深色模式
+  dimension_sequence: gui
+  optimal_steps: 4
+  keep_flag: 1
+  source_row: 9
+  base_verifier:
+    type: system_setting
+    params:
+      target: dark_mode_enabled
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+
+# ============================================================
+# B: Exact answer (1 task) — strong, unchanged
+# ============================================================
+- task_uid: 4app_new:SC06_003
+  task_id: SC06_003
+  task_name: 计算数学题
+  scene_category: 日常查询
+  task_type: 纯GUI
+  difficulty: 中等
+  prompt: 帮我用计算器算一下327乘以48再减去159的结果是多少
+  dimension_sequence: gui
+  optimal_steps: 5
+  keep_flag: 1
+  source_row: 17
+  base_verifier:
+    type: answer_contains
+    params:
+      required_exact:
+      - '15537'
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+
+# ============================================================
+# C: CLI tool invocation (3 tasks) — upgraded to composite
+#    AndroidWorld style: check tool called + result quality
+#    MobileAgent TIR: check distractor tools NOT called
+# ============================================================
+- task_uid: 4app_new:SC03_002
+  task_id: SC03_002
+  task_name: 搜AI热点新闻
+  scene_category: 资讯阅读
+  task_type: 混合
+  difficulty: 简单
+  prompt: 帮我搜搜最近的AI相关热点新闻
+  dimension_sequence: mcp → gui
+  optimal_steps: 3
+  keep_flag: 1
+  source_row: 2
+  base_verifier:
+    type: composite
+    params:
+      checks:
+      - type: tool_called
+        params:
+          tool_name_any: [search_tencent_news]
+          must_succeed: true
+      - type: answer_contains
+        params:
+          min_length: 50
+          required_any_keywords: [AI, 人工智能, 新闻, 热点]
+      - type: tool_not_called
+        params:
+          tool_name_none: [send_email, create_calendar_event]
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+
+- task_uid: 4app_new:SC09_001
+  task_id: SC09_001
+  task_name: 查电量和WiFi
+  scene_category: 系统快捷操作
+  task_type: 混合
+  difficulty: 简单
+  prompt: 帮我看看现在手机还剩多少电，还有当前连接的WiFi叫什么名字
+  dimension_sequence: cli → gui
+  optimal_steps: 4
+  keep_flag: 1
+  source_row: 6
+  base_verifier:
+    type: composite
+    params:
+      checks:
+      - type: tool_called
+        params:
+          tool_name_any: [get_battery_status]
+          must_succeed: true
+      - type: tool_called
+        params:
+          tool_name_any: [get_wifi_info]
+          must_succeed: true
+      - type: answer_matches
+        params:
+          patterns:
+          - \d+%
+          min_length: 15
+      - type: answer_contains
+        params:
+          required_any_keywords: [WiFi, wifi, WIFI, 网络, 连接]
+      - type: tool_not_called
+        params:
+          tool_name_none: [send_email, websearch-text.prompt_search]
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+
+- task_uid: 4app_new:SC04_009
+  task_id: SC04_009
+  task_name: 感冒药比价
+  scene_category: 网购外卖/生活服务
+  task_type: 混合
+  difficulty: 简单
+  prompt: 帮我在美团外卖搜一下999感冒灵的价格，然后上网搜下这个药的市场价做个对比，把结果告诉我
+  dimension_sequence: gui → mcp → output
+  optimal_steps: 6
+  keep_flag: 1
+  source_row: 15
+  base_verifier:
+    type: composite
+    params:
+      checks:
+      - type: tool_called
+        params:
+          tool_name_any: [websearch-text.prompt_search]
+          must_succeed: true
+      - type: gui_app_opened
+        params:
+          package: com.phoneuse.mmeituan_waimai
+          app_name: 美团
+      - type: answer_contains
+        params:
+          required_all_keywords: ['999', 价格]
+          min_length: 30
+      - type: answer_matches
+        params:
+          patterns:
+          - \d+\.?\d*
+      - type: tool_not_called
+        params:
+          tool_name_none: [send_email, create_calendar_event]
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+
+# ============================================================
+# D: Email tasks (5 tasks) — upgraded to composite
+#    AndroidWorld SMS style: check body content, not just sent
+#    + gui_app_opened for multi-app tasks
+# ============================================================
+- task_uid: 4app_new:SC03_009
+  task_id: SC03_009
+  task_name: 找上海租房攻略
+  scene_category: 资讯阅读
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我在小红书搜上海租房避坑攻略，把收藏量最高的那篇笔记收藏，然后把笔记链接发邮件给刘强phoneharness@example.com
+  dimension_sequence: gui → cli → mcp → gui
+  optimal_steps: 10
+  keep_flag: 1
+  source_row: 3
+  base_verifier:
+    type: composite
+    params:
+      checks:
+      - type: email_sent
+        params:
+          recipient_email: phoneharness@example.com
+          recipient_name: 刘强
+          body_should_contain_url: true
+      - type: gui_app_opened
+        params:
+          package: com.phoneuse.mxiaohongshu
+          app_name: 小红书
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+
+- task_uid: 4app_new:SC09_005
+  task_id: SC09_005
+  task_name: 压缩图片发邮件
+  scene_category: 系统快捷操作
+  task_type: 混合
+  difficulty: 困难
+  prompt: 帮我在文件管理器里找到最近7天下载的所有图片，把它们压缩后作为附件发邮件给周敏
+  dimension_sequence: gui → skill → mcp → gui
+  optimal_steps: 9
+  keep_flag: 1
+  source_row: 7
+  base_verifier:
+    type: composite
+    params:
+      checks:
+      - type: email_sent
+        params:
+          recipient_name: 周敏
+          requires_attachment: true
+          attachment_ext_any: [.zip, .rar, .7z]
+      - type: tool_not_called
+        params:
+          tool_name_none: [create_calendar_event]
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+
+- task_uid: 4app_new:SC09_003
+  task_id: SC09_003
+  task_name: 设闹钟发截图
+  scene_category: 系统快捷操作
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我设置一个明天早上7点半的闹钟，然后把设置成功的页面截图发邮件给赵刚phoneharness@example.com
+  dimension_sequence: gui → cli → mcp → gui
+  optimal_steps: 10
+  keep_flag: 1
+  source_row: 8
+  base_verifier:
+    type: composite
+    params:
+      checks:
+      - type: email_sent
+        params:
+          recipient_email: phoneharness@example.com
+          recipient_name: 赵刚
+          requires_attachment: true
+          attachment_ext_any: [.png]
+      - type: alarm_set
+        params:
+          time_contains: '7:30'
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+
+- task_uid: 4app_new:SC04_004
+  task_id: SC04_004
+  task_name: 奶茶店比价
+  scene_category: 网购外卖/生活服务
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我在小红书搜搜最近大家推荐的平价奶茶品牌，然后去美团外卖看看我附近这些品牌的奶茶价格，整理好发邮件给李婷phoneharness@example.com
+  dimension_sequence: gui → mcp
+  optimal_steps: 7
+  keep_flag: 1
+  source_row: 14
+  base_verifier:
+    type: composite
+    params:
+      checks:
+      - type: email_sent
+        params:
+          recipient_email: phoneharness@example.com
+          recipient_name: 李婷
+      - type: gui_app_opened
+        params:
+          package: com.phoneuse.mxiaohongshu
+          app_name: 小红书
+      - type: gui_app_opened
+        params:
+          package: com.phoneuse.mmeituan_waimai
+          app_name: 美团
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+
+- task_uid: 4app_new:SC06_005
+  task_id: SC06_005
+  task_name: 查电影上映日期
+  scene_category: 日常查询
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我在豆瓣上搜一下最近上映的评分最高的国产电影，看看它的具体上映日期，然后发邮件告诉我phoneharness@example.com
+  dimension_sequence: gui → mcp
+  optimal_steps: 7
+  keep_flag: 1
+  source_row: 16
+  base_verifier:
+    type: composite
+    params:
+      checks:
+      - type: email_sent
+        params:
+          recipient_email: phoneharness@example.com
+      - type: gui_app_opened
+        params:
+          package: com.phoneuse.mdouban
+          app_name: 豆瓣
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+
+# ============================================================
+# E: Artifact + content check (2 tasks) — upgraded
+#    AndroidWorld Markor style: file exists + content fuzzy match
+# ============================================================
+- task_uid: 4app_new:SC10_010
+  task_id: SC10_010
+  task_name: 旅行攻略整理
+  scene_category: 跨App工作流
+  task_type: 混合
+  difficulty: 困难
+  prompt: 帮我在小红书搜最近热门的国内旅行目的地，选点赞最高的那个，搜下这个地方未来7天的天气和附近高评分民宿，整理好创建下月初出发的旅行日历事件，再发邮件给郑华
+  dimension_sequence: gui → mcp → cli → skill → mcp
+  optimal_steps: 8
+  keep_flag: 1
+  source_row: 18
+  base_verifier:
+    type: composite
+    params:
+      checks:
+      - type: artifact_content_contains
+        params:
+          ext_any: [.docx]
+          min_size_bytes: 2048
+          keywords_any: [天气, 民宿, 旅行, 攻略]
+      - type: gui_app_opened
+        params:
+          package: com.phoneuse.mxiaohongshu
+          app_name: 小红书
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+
+- task_uid: 4app_new:SC08_005
+  task_id: SC08_005
+  task_name: 计算机二级信息整理
+  scene_category: 办公学习
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我打开系统浏览器查今年计算机二级考试的报名时间和考试大纲，把内容整理成Word文档，再创建一个报名前3天的日历提醒
+  dimension_sequence: gui → skill → cli
+  optimal_steps: 7
+  keep_flag: 1
+  source_row: 26
+  base_verifier:
+    type: composite
+    params:
+      checks:
+      - type: artifact_content_contains
+        params:
+          ext_any: [.docx]
+          min_size_bytes: 2048
+          keywords_all: [计算机, 考试]
+      - type: tool_not_called
+        params:
+          tool_name_none: [search_tencent_news, search_weibo_hot]
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+
+# ============================================================
+# F: Answer quality + mock DB cross-check (1 task) — upgraded
+# ============================================================
+- task_uid: 4app_new:SC02_009
+  task_id: SC02_009
+  task_name: 动画榜存表格
+  scene_category: 短视频/娱乐
+  task_type: 纯GUI
+  difficulty: 中等
+  prompt: 帮我看看现在B站动画区热门榜前三名的视频和各自的播放量、点赞数
+  dimension_sequence: gui
+  optimal_steps: 5
+  keep_flag: 1
+  source_row: 24
+  base_verifier:
+    type: composite
+    params:
+      checks:
+      - type: gui_app_opened
+        params:
+          package: com.phoneuse.mbilibili
+          app_name: B站
+      - type: answer_contains
+        params:
+          required_all_keywords: [播放量, 点赞]
+          min_length: 30
+      - type: answer_matches
+        params:
+          patterns:
+          - \d+
+      - type: tool_not_called
+        params:
+          tool_name_none: [send_email, websearch-text.prompt_search, search_tencent_news]
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+
+# ============================================================
+# Removed tasks (keep_flag=0) — listed for traceability
+# ============================================================
+- task_uid: 4app_new:SC03_011
+  task_id: SC03_011
+  task_name: 找热搜美食做法
+  keep_flag: 0
+  source_row: 4
+  base_verifier: {type: skip}
+- task_uid: 4app_new:SC04_006
+  task_id: SC04_006
+  task_name: 宝宝辅食查询
+  keep_flag: 0
+  source_row: 10
+  base_verifier: {type: skip}
+- task_uid: 4app_new:SC04_012
+  task_id: SC04_012
+  task_name: 榴莲价格对比
+  keep_flag: 0
+  source_row: 11
+  base_verifier: {type: skip}
+- task_uid: 4app_new:SC04_015
+  task_id: SC04_015
+  task_name: 狗粮现货查询
+  keep_flag: 0
+  source_row: 12
+  base_verifier: {type: skip}
+- task_uid: 4app_new:SC04_007
+  task_id: SC04_007
+  task_name: 超市配送提醒
+  keep_flag: 0
+  source_row: 13
+  base_verifier: {type: skip}
+- task_uid: 4app_new:SC10_001
+  task_id: SC10_001
+  task_name: 电影解说查询
+  keep_flag: 0
+  source_row: 19
+  base_verifier: {type: skip}
+- task_uid: 4app_new:SC01_008
+  task_id: SC01_008
+  task_name: 热搜笔记发邮件
+  keep_flag: 0
+  source_row: 20
+  base_verifier: {type: skip}
+- task_uid: 4app_new:SC02_012
+  task_id: SC02_012
+  task_name: 教程链接转二维码
+  keep_flag: 0
+  source_row: 21
+  base_verifier: {type: skip}
+- task_uid: 4app_new:SC02_018
+  task_id: SC02_018
+  task_name: 知识区热点整文档
+  keep_flag: 0
+  source_row: 22
+  base_verifier: {type: skip}
+- task_uid: 4app_new:SC02_022
+  task_id: SC02_022
+  task_name: 健身操视频设提醒
+  keep_flag: 0
+  source_row: 23
+  base_verifier: {type: skip}
+- task_uid: 4app_new:SC08_001
+  task_id: SC08_001
+  task_name: Python教程整理发邮
+  keep_flag: 0
+  source_row: 25
+  base_verifier: {type: skip}
+- task_uid: 4app_new:SC08_006
+  task_id: SC08_006
+  task_name: 计算机书籍信息整理
+  keep_flag: 0
+  source_row: 27
+  base_verifier: {type: skip}

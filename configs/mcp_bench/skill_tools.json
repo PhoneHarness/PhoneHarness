@@ -1,0 +1,312 @@
+{
+  "description": "维度三：代码工具 Skill 注册表 (Python 库封装)",
+  "version": "0.1.0",
+  "categories": [
+    "pdf", "docx", "xlsx", "pptx", "image",
+    "ocr", "chart", "convert", "video_audio",
+    "text", "qrcode", "archive"
+  ],
+  "tools": {
+    "pdf_merge": {
+      "category": "pdf",
+      "description": "将多个 PDF 文件合并为一个",
+      "python_lib": "pypdf",
+      "module": "tools.skills.pdf_skill",
+      "function": "pdf_merge",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_files": {"type": "array", "items": {"type": "string"}, "description": "要合并的 PDF 文件路径列表"},
+          "output_file": {"type": "string", "description": "输出文件路径"}
+        },
+        "required": ["input_files", "output_file"]
+      }
+    },
+    "pdf_split": {
+      "category": "pdf",
+      "description": "将 PDF 按页码范围拆分为多个文件",
+      "python_lib": "pypdf",
+      "module": "tools.skills.pdf_skill",
+      "function": "pdf_split",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_file": {"type": "string", "description": "输入 PDF 文件路径"},
+          "page_ranges": {"type": "array", "items": {"type": "string"}, "description": "页码范围列表, 如 ['1-5', '6-10']"},
+          "output_dir": {"type": "string", "description": "输出目录"}
+        },
+        "required": ["input_file", "page_ranges"]
+      }
+    },
+    "pdf_extract_text": {
+      "category": "pdf",
+      "description": "从 PDF 中提取纯文本",
+      "python_lib": "pdfplumber",
+      "module": "tools.skills.pdf_skill",
+      "function": "pdf_extract_text",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_file": {"type": "string", "description": "PDF 文件路径"},
+          "pages": {"type": "array", "items": {"type": "integer"}, "description": "指定页码, 不传则全部"}
+        },
+        "required": ["input_file"]
+      }
+    },
+    "pdf_add_watermark": {
+      "category": "pdf",
+      "description": "在 PDF 每页添加文字水印",
+      "python_lib": "pypdf + reportlab",
+      "module": "tools.skills.pdf_skill",
+      "function": "pdf_add_watermark",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_file": {"type": "string"},
+          "watermark_text": {"type": "string"},
+          "output_file": {"type": "string"},
+          "opacity": {"type": "number", "description": "透明度 0-1"}
+        },
+        "required": ["input_file", "watermark_text", "output_file"]
+      }
+    },
+    "pdf_encrypt": {
+      "category": "pdf",
+      "description": "对 PDF 文件进行密码保护",
+      "python_lib": "pypdf",
+      "module": "tools.skills.pdf_skill",
+      "function": "pdf_encrypt",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_file": {"type": "string"},
+          "password": {"type": "string"},
+          "output_file": {"type": "string"}
+        },
+        "required": ["input_file", "password", "output_file"]
+      }
+    },
+    "image_convert": {
+      "category": "image",
+      "description": "图片格式转换 (JPEG/PNG/WebP/BMP/TIFF)",
+      "python_lib": "Pillow",
+      "module": "tools.skills.photo_skill",
+      "function": "image_convert",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_file": {"type": "string"},
+          "output_file": {"type": "string"},
+          "format": {"type": "string", "enum": ["JPEG", "PNG", "WebP", "BMP", "TIFF"]}
+        },
+        "required": ["input_file", "output_file"]
+      }
+    },
+    "image_compress": {
+      "category": "image",
+      "description": "压缩图片文件大小",
+      "python_lib": "Pillow",
+      "module": "tools.skills.photo_skill",
+      "function": "image_compress",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_file": {"type": "string"},
+          "output_file": {"type": "string"},
+          "quality": {"type": "integer", "description": "质量 1-100"},
+          "max_size_kb": {"type": "integer", "description": "目标最大文件大小(KB)"}
+        },
+        "required": ["input_file", "output_file"]
+      }
+    },
+    "image_resize": {
+      "category": "image",
+      "description": "调整图片尺寸",
+      "python_lib": "Pillow",
+      "module": "tools.skills.photo_skill",
+      "function": "image_resize",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_file": {"type": "string"},
+          "output_file": {"type": "string"},
+          "width": {"type": "integer"},
+          "height": {"type": "integer"}
+        },
+        "required": ["input_file", "output_file"]
+      }
+    },
+    "image_remove_bg": {
+      "category": "image",
+      "description": "自动去除图片背景",
+      "python_lib": "rembg",
+      "module": "tools.skills.photo_skill",
+      "function": "image_remove_bg",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_file": {"type": "string"},
+          "output_file": {"type": "string"}
+        },
+        "required": ["input_file", "output_file"]
+      }
+    },
+    "docx_create": {
+      "category": "docx",
+      "description": "创建 Word 文档",
+      "python_lib": "python-docx",
+      "module": "tools.skills.docx_skill",
+      "function": "docx_create",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "output_file": {"type": "string"},
+          "title": {"type": "string"},
+          "content": {"type": "array", "items": {"type": "object"}, "description": "段落/表格/图片等内容"}
+        },
+        "required": ["output_file"]
+      }
+    },
+    "xlsx_create": {
+      "category": "xlsx",
+      "description": "创建 Excel 表格",
+      "python_lib": "openpyxl",
+      "module": "tools.skills.xlsx_skill",
+      "function": "xlsx_create",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "output_file": {"type": "string"},
+          "data": {"type": "array", "description": "数据行列表"},
+          "headers": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["output_file"]
+      }
+    },
+    "pptx_create": {
+      "category": "pptx",
+      "description": "创建 PPT 演示文稿",
+      "python_lib": "python-pptx",
+      "module": "tools.skills.pptx_skill",
+      "function": "pptx_create",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "output_file": {"type": "string"},
+          "slides": {"type": "array", "items": {"type": "object"}, "description": "幻灯片内容"}
+        },
+        "required": ["output_file", "slides"]
+      }
+    },
+    "chart_bar": {
+      "category": "chart",
+      "description": "绘制柱状图",
+      "python_lib": "matplotlib",
+      "module": "tools.skills.chart_skill",
+      "function": "chart_bar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "data": {"type": "object", "description": "图表数据"},
+          "title": {"type": "string"},
+          "output_file": {"type": "string"}
+        },
+        "required": ["data", "output_file"]
+      }
+    },
+    "chart_line": {
+      "category": "chart",
+      "description": "绘制折线图",
+      "python_lib": "matplotlib",
+      "module": "tools.skills.chart_skill",
+      "function": "chart_line",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "data": {"type": "object"},
+          "title": {"type": "string"},
+          "output_file": {"type": "string"}
+        },
+        "required": ["data", "output_file"]
+      }
+    },
+    "chart_pie": {
+      "category": "chart",
+      "description": "绘制饼图",
+      "python_lib": "matplotlib",
+      "module": "tools.skills.chart_skill",
+      "function": "chart_pie",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "data": {"type": "object"},
+          "title": {"type": "string"},
+          "output_file": {"type": "string"}
+        },
+        "required": ["data", "output_file"]
+      }
+    },
+    "docx_to_pdf": {
+      "category": "convert",
+      "description": "Word 转 PDF",
+      "python_lib": "libreoffice CLI",
+      "module": "tools.skills.convert_skill",
+      "function": "docx_to_pdf",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_file": {"type": "string"},
+          "output_file": {"type": "string"}
+        },
+        "required": ["input_file", "output_file"]
+      }
+    },
+    "video_to_gif": {
+      "category": "video_audio",
+      "description": "视频转 GIF",
+      "python_lib": "moviepy / ffmpeg-python",
+      "module": "tools.skills.media_skill",
+      "function": "video_to_gif",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_file": {"type": "string"},
+          "output_file": {"type": "string"},
+          "start_time": {"type": "number", "description": "开始时间(秒)"},
+          "duration": {"type": "number", "description": "持续时间(秒)"}
+        },
+        "required": ["input_file", "output_file"]
+      }
+    },
+    "qrcode_generate": {
+      "category": "qrcode",
+      "description": "生成二维码",
+      "python_lib": "qrcode",
+      "module": "tools.skills.qrcode_skill",
+      "function": "qrcode_generate",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "data": {"type": "string", "description": "二维码内容"},
+          "output_file": {"type": "string"}
+        },
+        "required": ["data", "output_file"]
+      }
+    },
+    "ocr_image_to_text": {
+      "category": "ocr",
+      "description": "图片文字识别 (OCR)",
+      "python_lib": "pytesseract / PaddleOCR",
+      "module": "tools.skills.ocr_skill",
+      "function": "ocr_image_to_text",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_file": {"type": "string"},
+          "language": {"type": "string", "description": "识别语言, 如 chi_sim+eng"}
+        },
+        "required": ["input_file"]
+      }
+    }
+  }
+}

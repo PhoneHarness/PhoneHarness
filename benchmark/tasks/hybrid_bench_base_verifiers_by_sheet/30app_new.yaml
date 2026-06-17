@@ -1,0 +1,966 @@
+version: 1
+source_workbook: benchmark/Hybrid-Bench.xlsx
+source_sheet: 30app_new
+id_policy:
+  task_uid_format: <sheet>:<task_id>
+  collision_suffix: :r<source_row> (only when a sheet reuses the same task_id)
+  note: task_id is not globally unique across sheets, and the workbook may also reuse an ID inside one sheet; always key by task_uid
+scoring:
+  mode: binary
+  pass: 1
+  fail: 0
+task_pass_rule: base_verifier_pass
+verifier_types:
+  artifact_exists: Check that a required output artifact exists with a plausible extension and size.
+  email_sent: Check that an email side effect happened with the intended recipient and optional attachment/url constraints.
+  calendar_event_created: Check that a calendar reminder/event was created with minimal expected hints.
+  system_setting: Check that a system-level state reached the requested target.
+  tool_called: Check that a key tool/action was successfully invoked when no stronger result signal exists.
+  answer_contains: 'Fallback verifier: check that the final answer contains the minimum expected result signal.'
+summary:
+  sheet: 30app_new
+  task_count: 45
+  colliding_task_refs:
+  - 30app_new:SC14_002
+  verifier_type_counts:
+    answer_contains: 9
+    artifact_exists: 6
+    calendar_event_created: 3
+    email_sent: 16
+    system_setting: 1
+    tool_called: 10
+tasks:
+- task_uid: 30app_new:SC02_016
+  task_id: SC02_016
+  task_name: 查纪录片背景
+  scene_category: 1. 短视频/娱乐
+  task_type: 混合
+  difficulty: 中等
+  prompt: 打开爱奇艺看看最近上新的高分纪录片有哪些，选第一个评分最高的，帮我上网查查它的拍摄背景资料
+  dimension_sequence: gui → mcp → gui
+  keep_flag: 1
+  source_row: 3
+  base_verifier:
+    type: tool_called
+    params:
+      tool_name_any:
+      - websearch-text.prompt_search
+      must_succeed: true
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证关键工具被成功调用，不验证最终用户结果质量
+- task_uid: 30app_new:SC02_005
+  task_id: SC02_005
+  task_name: 新片查豆瓣评分
+  scene_category: 1. 短视频/娱乐
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我打开美团看看正在热播的院线电影有哪些，找一部评分最高的，上网查查它的豆瓣评分是多少
+  dimension_sequence: gui → mcp → gui
+  keep_flag: 1
+  source_row: 4
+  base_verifier:
+    type: tool_called
+    params:
+      tool_name_any:
+      - websearch-text.prompt_search
+      must_succeed: true
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证关键工具被成功调用，不验证最终用户结果质量
+- task_uid: 30app_new:SC02_006
+  task_id: SC02_006
+  task_name: 剧集加更新提醒
+  scene_category: 1. 短视频/娱乐
+  task_type: 混合
+  difficulty: 中等
+  prompt: 打开腾讯视频，找到《仙逆》的更新时间，帮我把更新提醒加到手机日历里
+  dimension_sequence: gui → cli
+  keep_flag: 1
+  source_row: 5
+  base_verifier:
+    type: calendar_event_created
+    params:
+      title_keywords_any:
+      - 更新
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证已创建提醒，不验证时间与标题是否完全最优
+- task_uid: 30app_new:SC02_004
+  task_id: SC02_004
+  task_name: 美食教程发邮件
+  scene_category: 1. 短视频/娱乐
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我在B站搜一下红烧肉的家常做法视频，找到播放量最高的那个，把视频标题和UP主名字截图发邮件给李刚phoneharness@example.com
+  dimension_sequence: gui → cli → mcp
+  keep_flag: 1
+  source_row: 6
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 李刚
+      requires_attachment: true
+      attachment_ext_any:
+      - .png
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC02_001
+  task_id: SC02_001
+  task_name: 播放周杰伦新歌
+  scene_category: 1. 短视频/娱乐
+  task_type: 纯CLI
+  difficulty: 简单
+  prompt: 帮我播放周杰伦的最新单曲
+  dimension_sequence: mcp
+  keep_flag: 1
+  source_row: 7
+  base_verifier:
+    type: tool_called
+    params:
+      tool_name_any:
+      - play_qq_music
+      must_succeed: true
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证关键工具被成功调用，不验证最终用户结果质量
+- task_uid: 30app_new:SC02_012
+  task_id: SC02_012
+  task_name: 添加运动歌单
+  scene_category: 1. 短视频/娱乐
+  task_type: 混合
+  difficulty: 中等
+  prompt: 你帮我在酷我音乐里搜索适合运动时听的DJ歌单，找到播放量最高的那个，把歌单里的前3首歌都添加到我收藏的“运动专用”歌单里，然后生成这个歌单的分享链接发邮件给周明phoneharness@example.com
+  dimension_sequence: gui → mcp
+  keep_flag: null
+  source_row: 8
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 周明
+      body_should_contain_url: true
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC09_005
+  task_id: SC09_005
+  task_name: 创建会议日历提醒
+  scene_category: 2. 办公学习
+  task_type: 混合
+  difficulty: 中等
+  prompt: 打开腾讯会议创建明天下午两点半的产品评审会并复制会议号，在日历里新建这个会议的提醒，备注填好会议号，然后把通知发邮件给同事phoneharness@example.com
+  dimension_sequence: gui → cli → mcp
+  keep_flag: 1
+  source_row: 9
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 同事
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC09_008
+  task_id: SC09_008
+  task_name: 同步论文摘要到文档
+  scene_category: 2. 办公学习
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我搜索arXiv上最新发布的3篇多模态大模型相关的核心论文，把它们的摘要复制到腾讯文档里新建的「AI技术调研」word笔记中
+  dimension_sequence: mcp → gui
+  keep_flag: 1
+  source_row: 10
+  base_verifier:
+    type: answer_contains
+    params:
+      min_length: 20
+      required_any_keywords:
+      - AI
+      - 人工智能
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证最终回答中的最低关键信号，不验证来源与计算正确性
+- task_uid: 30app_new:SC09_007
+  task_id: SC09_007
+  task_name: 合并PDF项目报告
+  scene_category: 2. 办公学习
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我把手机里存的三个项目阶段报告PDF合并成一个完整的文件，打开WPS检查下合并后的格式有没有错乱，没问题的话发邮件给李经理phoneharness@example.com
+  dimension_sequence: skill → gui → mcp
+  keep_flag: 1
+  source_row: 11
+  base_verifier:
+    type: artifact_exists
+    params:
+      artifact_kind: pdf
+      ext_any:
+      - .pdf
+      min_size_bytes: 1024
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+  coverage_gap: 只验证产物存在，不验证内容质量或信息完整性
+- task_uid: 30app_new:SC01_008
+  task_id: SC01_008
+  task_name: 热搜内容整理发邮
+  scene_category: 2. 办公学习
+  task_type: 混合
+  difficulty: 困难
+  prompt: 帮我在微博上搜一下最近关于世界人工智能大会的相关内容，找到转发量最高的3条动态，把每条的内容和发布者信息整理好做成Excel表格，把表格作为附件发邮件给曹总phoneharness@example.com
+  dimension_sequence: gui → skill → mcp
+  keep_flag: 1
+  source_row: 12
+  base_verifier:
+    type: artifact_exists
+    params:
+      artifact_kind: xlsx
+      ext_any:
+      - .xlsx
+      min_size_bytes: 1024
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+  coverage_gap: 只验证产物存在，不验证内容质量或信息完整性
+- task_uid: 30app_new:SC01_007
+  task_id: SC01_007
+  task_name: 会议号发邮件
+  scene_category: 2. 办公学习
+  task_type: 混合
+  difficulty: 简单
+  prompt: 帮我在腾讯会议里新建一个快速会议，把会议号和入会链接复制下来，发邮件告诉吴磊phoneharness@example.com
+  dimension_sequence: gui → cli → mcp
+  keep_flag: 1
+  source_row: 13
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      body_should_contain_url: true
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC09_003
+  task_id: SC09_003
+  task_name: 新建在线表格
+  scene_category: 2. 办公学习
+  task_type: 纯GUI
+  difficulty: 简单
+  prompt: 打开腾讯文档，新建一个空白在线表格，把第一行的三个单元格表头分别设置为姓名、部门、入职日期，然后把表格邮件发送给小王phoneharness@example.com 并告知他让大家同步一下
+  dimension_sequence: gui
+  keep_flag: 1
+  source_row: 14
+  base_verifier:
+    type: answer_contains
+    params:
+      min_length: 20
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证最终回答中的最低关键信号，不验证来源与计算正确性
+- task_uid: 30app_new:SC09_002
+  task_id: SC09_002
+  task_name: 生成营收饼图
+  scene_category: 2. 办公学习
+  task_type: 纯CLI
+  difficulty: 简单
+  prompt: 帮我把上个月的项目营收数据：电商占45%、广告占30%、服务占25%，生成对应的饼图，然后发邮件给陈丽phoneharness@example.com
+  dimension_sequence: skill → mcp
+  keep_flag: 1
+  source_row: 15
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 陈丽
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC03_006
+  task_id: SC03_006
+  task_name: 科技新闻查进展
+  scene_category: 3. 资讯阅读
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我打开腾讯新闻看看今天的科技板块头条，把里面提到的AI大模型相关消息再搜下有没有最新进展，整理好发邮件给王浩phoneharness@example.com
+  dimension_sequence: gui → mcp
+  keep_flag: 1
+  source_row: 16
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 王浩
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC03_007
+  task_id: SC03_007
+  task_name: 回答整理成Word
+  scene_category: 3. 资讯阅读
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我在知乎搜下考研英语的备考技巧，找点赞最高的3个回答，把核心要点整理成Word文档存到我手机里
+  dimension_sequence: gui → skill
+  keep_flag: 1
+  source_row: 17
+  base_verifier:
+    type: artifact_exists
+    params:
+      artifact_kind: docx
+      ext_any:
+      - .docx
+      min_size_bytes: 1024
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+  coverage_gap: 只验证产物存在，不验证内容质量或信息完整性
+- task_uid: 30app_new:SC03_001
+  task_id: SC03_001
+  task_name: 查微博热搜
+  scene_category: 3. 资讯阅读
+  task_type: 混合
+  difficulty: 简单
+  prompt: 帮我看看今天的微博热搜榜都有哪些内容
+  dimension_sequence: mcp → gui
+  keep_flag: 1
+  source_row: 18
+  base_verifier:
+    type: tool_called
+    params:
+      tool_name_any:
+      - search_weibo_hot
+      must_succeed: true
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证关键工具被成功调用，不验证最终用户结果质量
+- task_uid: 30app_new:SC03_005
+  task_id: SC03_005
+  task_name: 攻略截图发邮件
+  scene_category: 3. 资讯阅读
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我在小红书搜下北京端午游玩的攻略，找到点赞最高的那篇笔记，把内容截个图发邮件给张婷phoneharness@example.com
+  dimension_sequence: gui → cli → mcp
+  keep_flag: 1
+  source_row: 19
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 张婷
+      requires_attachment: true
+      attachment_ext_any:
+      - .png
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC04_002
+  task_id: SC04_002
+  task_name: 查基金最新行情
+  scene_category: 5. 移动支付/金融理财
+  task_type: 混合
+  difficulty: 简单
+  prompt: 帮我查下现在沪深300指数基金的最新净值和近一周涨幅
+  dimension_sequence: mcp → gui
+  keep_flag: 1
+  source_row: 20
+  base_verifier:
+    type: tool_called
+    params:
+      tool_name_any:
+      - websearch-text.prompt_search
+      must_succeed: true
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证关键工具被成功调用，不验证最终用户结果质量
+- task_uid: 30app_new:SC04_005
+  task_id: SC04_005
+  task_name: 金价对比发邮件
+  scene_category: 5. 移动支付/金融理财
+  task_type: 混合
+  difficulty: 困难
+  prompt: 帮我在小红书上看看近期的足金首饰团购优惠价，再查下今天的国际黄金现货价格，把两者的对比结果发邮件告诉陈丽
+  dimension_sequence: gui → mcp → gui
+  keep_flag: 1
+  source_row: 21
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC08_012
+  task_id: SC08_012
+  task_name: 房源查区域租金
+  scene_category: 6. 网购外卖/即时零售
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我在安居客上搜杭州西湖区附近2500元以内的整租房源，把符合条件的前三个房源信息截图，再上网查查这个区域的平均租金是多少
+  dimension_sequence: gui → cli → mcp → cli
+  keep_flag: 1
+  source_row: 22
+  base_verifier:
+    type: tool_called
+    params:
+      tool_name_any:
+      - websearch-text.prompt_search
+      - screencap
+      must_succeed: true
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证关键工具被成功调用，不验证最终用户结果质量
+- task_uid: 30app_new:G020
+  task_id: G020
+  task_name: 新增外卖收货地
+  scene_category: 6. 网购外卖/即时零售
+  task_type: 纯GUI
+  difficulty: 困难
+  prompt: 帮我打开美团外卖，进入我的收货地址页面，新增一条收货地址：北京市朝阳区建国路88号，收货人李华，联系电话13800138000，保存成功就可以
+  dimension_sequence: gui
+  keep_flag: null
+  source_row: 23
+  base_verifier:
+    type: answer_contains
+    params:
+      min_length: 20
+      required_any_keywords:
+      - 导航
+      - 路线
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证最终回答中的最低关键信号，不验证来源与计算正确性
+- task_uid: 30app_new:SC06_003
+  task_id: SC06_003
+  task_name: 查放假安排发邮
+  scene_category: 7. 日常查询
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我打开元宝问问2026年中秋节放假安排，把回复内容截图后发邮件给陈丽phoneharness@example.com
+  dimension_sequence: gui → cli → mcp → gui
+  keep_flag: 1
+  source_row: 24
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 陈丽
+      requires_attachment: true
+      attachment_ext_any:
+      - .png
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC06_002
+  task_id: SC06_002
+  task_name: 计算器算数值
+  scene_category: 7. 日常查询
+  task_type: 纯GUI
+  difficulty: 简单
+  prompt: 帮我用计算器算一下368乘以12再减去479的结果是多少
+  dimension_sequence: gui
+  keep_flag: 1
+  source_row: 25
+  base_verifier:
+    type: answer_contains
+    params:
+      min_length: 20
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证最终回答中的最低关键信号，不验证来源与计算正确性
+- task_uid: 30app_new:SC07_002
+  task_id: SC07_002
+  task_name: 美图加复古滤镜
+  scene_category: 8. 拍照/相册处理
+  task_type: 纯GUI
+  difficulty: 中等
+  prompt: 帮我打开美图秀秀，给相册里的第一张照片加上复古滤镜后保存
+  dimension_sequence: gui
+  keep_flag: 1
+  source_row: 26
+  base_verifier:
+    type: answer_contains
+    params:
+      min_length: 20
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证最终回答中的最低关键信号，不验证来源与计算正确性
+- task_uid: 30app_new:SC07_001
+  task_id: SC07_001
+  task_name: 拍图压缩发邮件
+  scene_category: 8. 拍照/相册处理
+  task_type: 纯CLI
+  difficulty: 简单
+  prompt: 帮我拍张照片，压缩后发邮件给张伟phoneharness@example.com
+  dimension_sequence: cli → skill → mcp
+  keep_flag: 1
+  source_row: 27
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 张伟
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC07_003
+  task_id: SC07_003
+  task_name: 照片加设锁屏
+  scene_category: 8. 拍照/相册处理
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我打开美图秀秀，给相册里最近的一张旅行照片加上我名字“王强”的专属水印，调整好位置后把这张图设为手机锁屏壁纸
+  dimension_sequence: gui
+  keep_flag: null
+  source_row: 28
+  base_verifier:
+    type: answer_contains
+    params:
+      min_length: 20
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证最终回答中的最低关键信号，不验证来源与计算正确性
+- task_uid: 30app_new:SC10_002
+  task_id: SC10_002
+  task_name: 设早7点半闹钟
+  scene_category: 9. 系统快捷操作
+  task_type: 纯GUI
+  difficulty: 简单
+  prompt: 帮我设置一个明天早上7点半的闹钟，提醒我赶高铁
+  dimension_sequence: gui
+  keep_flag: 1
+  source_row: 29
+  base_verifier:
+    type: calendar_event_created
+    params:
+      datetime_hint: tomorrow
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证已创建提醒，不验证时间与标题是否完全最优
+- task_uid: 30app_new:SC10_001
+  task_id: SC10_001
+  task_name: 查音量电量
+  scene_category: 9. 系统快捷操作
+  task_type: 纯CLI
+  difficulty: 简单
+  prompt: 帮我查下现在手机的音量和剩余电量
+  dimension_sequence: cli
+  keep_flag: 1
+  source_row: 30
+  base_verifier:
+    type: tool_called
+    params:
+      tool_name_any:
+      - get_battery_status
+      must_succeed: true
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证关键工具被成功调用，不验证最终用户结果质量
+- task_uid: 30app_new:SC14_004
+  task_id: SC14_004
+  task_name: 查天气设闹钟
+  scene_category: 11. 银发用户/无障碍场景
+  task_type: 混合
+  difficulty: 中等
+  prompt: 你帮我查查咱们市明天的天气咋样适不适合出门，然后帮我设个明天早上6点半的闹钟哈
+  dimension_sequence: cli → mcp → gui
+  keep_flag: 1
+  source_row: 31
+  base_verifier:
+    type: tool_called
+    params:
+      tool_name_any:
+      - websearch-text.prompt_search
+      must_succeed: true
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证关键工具被成功调用，不验证最终用户结果质量
+- task_uid: 30app_new:SC14_001
+  task_id: SC14_001
+  task_name: 查电量WiFi
+  scene_category: 11. 银发用户/无障碍场景
+  task_type: 混合
+  difficulty: 简单
+  prompt: 帮我看看我这手机现在还有多少电啊，还有连的无线网叫什么名
+  dimension_sequence: cli → gui
+  keep_flag: 1
+  source_row: 32
+  base_verifier:
+    type: tool_called
+    params:
+      tool_name_any:
+      - get_battery_status
+      - get_wifi_info
+      must_succeed: true
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证关键工具被成功调用，不验证最终用户结果质量
+- task_uid: 30app_new:SC14_002:r33
+  task_id: SC14_002
+  task_name: 调最大字体
+  scene_category: 11. 银发用户/无障碍场景
+  task_type: 纯GUI
+  difficulty: 中等
+  prompt: 帮我把手机字体调大
+  dimension_sequence: gui
+  keep_flag: 1
+  source_row: 33
+  base_verifier:
+    type: system_setting
+    params:
+      target: font_scale_max
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+  coverage_gap: 只验证系统目标状态，不验证具体 GUI 操作路径
+- task_uid: 30app_new:SC14_002:r34
+  task_id: SC14_002
+  task_name: 设血压检测提醒
+  scene_category: 11. 银发用户/无障碍场景
+  task_type: 纯CLI
+  difficulty: 中等
+  prompt: 我每周三上午都要去社区医院测血压，你先帮我查查下周三会不会下雨啊，要是不下雨就帮我设个每周三早上9点的提醒，顺便发个邮件告诉我闺女王丽phoneharness@example.com省得她老惦记我忘了去
+  dimension_sequence: mcp → cli → mcp
+  keep_flag: null
+  source_row: 34
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 王丽
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC13_004
+  task_id: SC13_004
+  task_name: 耳机体验店查询
+  scene_category: 12. 跨App工作流
+  task_type: 混合
+  difficulty: 中等
+  prompt: 我刚才在什么值得买看到索尼WF-1000XM5的推荐，帮我去知乎看看这款耳机的真实测评，再找找我家附近的索尼线下体验店地址，把测评要点和地址截图整理到Word文档中
+  dimension_sequence: gui → cli → mcp → cli → mcp
+  keep_flag: 1
+  source_row: 35
+  base_verifier:
+    type: tool_called
+    params:
+      tool_name_any:
+      - screencap
+      must_succeed: true
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证关键工具被成功调用，不验证最终用户结果质量
+- task_uid: 30app_new:SC11_005
+  task_id: SC11_005
+  task_name: 整理内容发邮件
+  scene_category: 12. 跨App工作流
+  task_type: 混合
+  difficulty: 困难
+  prompt: 帮我在喜马拉雅上搜索讲故宫历史的播客，找到播放量最高的那一集的介绍文案，再查下故宫的基本历史背景，把这两部分内容整合起来做成Word文档发给张伟phoneharness@example.com
+  dimension_sequence: gui → cli → mcp → skill → mcp
+  keep_flag: 1
+  source_row: 36
+  base_verifier:
+    type: artifact_exists
+    params:
+      artifact_kind: docx
+      ext_any:
+      - .docx
+      min_size_bytes: 1024
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+  coverage_gap: 只验证产物存在，不验证内容质量或信息完整性
+- task_uid: 30app_new:SC11_004
+  task_id: SC11_004
+  task_name: 创建听书提醒
+  scene_category: 12. 跨App工作流
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我在喜马拉雅找到《三体》的有声小说，找到上次听到的第12集开始播放，然后给我创建一个明天晚上8点继续听的日历提醒
+  dimension_sequence: gui → cli
+  keep_flag: 1
+  source_row: 37
+  base_verifier:
+    type: calendar_event_created
+    params:
+      datetime_hint: tomorrow
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证已创建提醒，不验证时间与标题是否完全最优
+- task_uid: 30app_new:SC13_001
+  task_id: SC13_001
+  task_name: 日料店信息查询
+  scene_category: 12. 跨App工作流
+  task_type: 混合
+  difficulty: 简单
+  prompt: 帮我在美团外卖上找附近评分4.8分以上的日料店，选排名第一的去小红书看看大家的真实评价，最后把这家店的地址和核心评价整理好发邮件给李强phoneharness@example.com
+  dimension_sequence: gui → mcp
+  keep_flag: 1
+  source_row: 38
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 李强
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC13_003
+  task_id: SC13_003
+  task_name: 热搜内容汇总
+  scene_category: 12. 跨App工作流
+  task_type: 纯CLI
+  difficulty: 简单
+  prompt: 帮我看看今天微博热搜第一条是什么，去搜搜腾讯新闻对这件事的相关报道，把热搜话题和核心报道内容整理好发邮件给张丽phoneharness@example.com
+  dimension_sequence: mcp
+  keep_flag: 1
+  source_row: 39
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 张丽
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC08_013
+  task_id: SC08_013
+  task_name: 租房均价统计
+  scene_category: 12. 跨App工作流
+  task_type: 混合
+  difficulty: 困难
+  prompt: 帮我打开安居客，搜索广州天河区珠江新城的两居室租房源，统计前10个房源的平均租金，把统计结果生成柱状图，发邮件给王强phoneharness@example.com
+  dimension_sequence: gui → skill → mcp
+  keep_flag: 1
+  source_row: 40
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 王强
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC08_009
+  task_id: SC08_009
+  task_name: 房源二维码分享
+  scene_category: 12. 跨App工作流
+  task_type: 混合
+  difficulty: 困难
+  prompt: 帮我打开自如APP，搜索深圳南山区科技园附近的合租房源，筛选出月租金1800元以内带阳台的房间，把符合条件的第一个房源的链接生成二维码，发邮件给刘芳phoneharness@example.com告诉她帮我看看这个房子
+  dimension_sequence: gui → skill → mcp
+  keep_flag: null
+  source_row: 41
+  base_verifier:
+    type: artifact_exists
+    params:
+      artifact_kind: image
+      ext_any:
+      - .png
+      - .jpg
+      - .jpeg
+      min_size_bytes: 512
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+  coverage_gap: 只验证产物存在，不验证内容质量或信息完整性
+- task_uid: 30app_new:SC05_010
+  task_id: SC05_010
+  task_name: 查最近地铁站信息
+  scene_category: 13. 导航出行
+  task_type: 混合
+  difficulty: 简单
+  prompt: 帮我获取当前的位置，然后搜下我附近最近的地铁站，把地铁站的名称和步行需要的时间发邮件告诉冯坤phoneharness@example.com
+  dimension_sequence: cli → gui → mcp
+  keep_flag: 1
+  source_row: 42
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC05_002
+  task_id: SC05_002
+  task_name: 搜附近公厕路线
+  scene_category: 13. 导航出行
+  task_type: 纯GUI
+  difficulty: 简单
+  prompt: 帮我在腾讯地图上搜下附近的公共厕所，规划最近的步行路线
+  dimension_sequence: gui
+  keep_flag: 1
+  source_row: 43
+  base_verifier:
+    type: answer_contains
+    params:
+      min_length: 20
+      required_any_keywords:
+      - 导航
+      - 路线
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证最终回答中的最低关键信号，不验证来源与计算正确性
+- task_uid: 30app_new:SC12_003
+  task_id: SC12_003
+  task_name: 母亲节文案存文档
+  scene_category: 14. AI App交互
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我用元宝写一条适合母亲节发的朋友圈文案，生成之后把文案内容复制下来，分享到我的微信朋友圈
+  dimension_sequence: gui → cli → skill → gui
+  keep_flag: 1
+  source_row: 44
+  base_verifier:
+    type: answer_contains
+    params:
+      min_length: 20
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证最终回答中的最低关键信号，不验证来源与计算正确性
+- task_uid: 30app_new:SC12_001
+  task_id: SC12_001
+  task_name: 团建方案发邮件
+  scene_category: 14. AI App交互
+  task_type: 混合
+  difficulty: 中等
+  prompt: 帮我打开元宝，让它写一份适合10人参与的周末团建活动方案，写完之后把完整回答复制发邮件给陈丽phoneharness@example.com
+  dimension_sequence: gui → cli → mcp → gui
+  keep_flag: 1
+  source_row: 45
+  base_verifier:
+    type: email_sent
+    params:
+      recipient_email: phoneharness@example.com
+      recipient_name: 陈丽
+      requires_attachment: true
+      attachment_ext_any:
+      - .png
+  score:
+    pass: 1
+    fail: 0
+  strength: medium
+  coverage_gap: 只验证邮件侧效果，不验证前置 GUI/检索步骤是否完全正确
+- task_uid: 30app_new:SC12_005
+  task_id: SC12_005
+  task_name: 考公考研对比整理
+  scene_category: 14. AI App交互-多轮
+  task_type: 混合
+  difficulty: 困难
+  prompt: 帮我打开元宝，先问它考研和考公两个方向各自的优缺点，等回答后再追问两个方向的备考时间规划，把两次的回答都复制下来，整理成一个Word文档保存
+  dimension_sequence: gui → cli → gui → cli → skill → gui
+  keep_flag: 1
+  source_row: 46
+  base_verifier:
+    type: artifact_exists
+    params:
+      artifact_kind: docx
+      ext_any:
+      - .docx
+      min_size_bytes: 1024
+  score:
+    pass: 1
+    fail: 0
+  strength: strong
+  coverage_gap: 只验证产物存在，不验证内容质量或信息完整性
+- task_uid: 30app_new:SC12_002
+  task_id: SC12_002
+  task_name: 多轮问旅游攻略
+  scene_category: 14. AI App交互-多轮
+  task_type: 纯GUI
+  difficulty: 中等
+  prompt: 帮我打开元宝，先问它厦门3天自由行的必去景点，等它回答之后再追问每个景点的平均游玩时长
+  dimension_sequence: gui
+  keep_flag: 1
+  source_row: 47
+  base_verifier:
+    type: answer_contains
+    params:
+      min_length: 20
+  score:
+    pass: 1
+    fail: 0
+  strength: weak
+  coverage_gap: 只验证最终回答中的最低关键信号，不验证来源与计算正确性

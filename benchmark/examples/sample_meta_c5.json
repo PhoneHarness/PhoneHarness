@@ -1,0 +1,11 @@
+{
+  "task_id": "C5",
+  "model": "doubao-2.0-pro",
+  "prompt": "帮我找北京朝阳区附近的火锅店，选一家最好的在地图上显示，然后发termux通知告诉我结果",
+  "start_time": "2026-04-10T00:02:29.870665",
+  "events": 11,
+  "tool_calls": 2,
+  "errors": 0,
+  "elapsed_seconds": 24.0,
+  "end_time": "2026-04-10T00:02:53.882589"
+}

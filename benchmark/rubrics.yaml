@@ -1,0 +1,381 @@
+# PhoneHarness Benchmark — Grading Rubrics
+#
+# 每条任务 5 个维度，每项 0/1 二值打分，满分 5 分
+# 维度:
+#   completion       — 最终产物是否存在且正确
+#   tool_selection   — 是否选对了关键工具
+#   param_accuracy   — 关键参数是否正确
+#   no_hallucination — 没有编造工具/伪造结果
+#   efficiency       — 步数 ≤ 阈值（无冗余循环）
+#
+# 自动 grader 根据这些规则判定，部分 no_hallucination 需要 trace 交叉比对
+#
+# 注意: glob 模式不绑定特定文件名，因为模型可能用中文/英文任意命名。
+# 只按文件类型+后缀匹配，辅以 trace 中的 done event 验证。
+
+rubrics:
+  C1:
+    name: 竞品调研→PPT
+    max_steps: 6
+    completion:
+      files:
+        - glob: "*.pptx"
+          min_size_kb: 5
+          parse: pptx
+          min_slides: 2
+      trace_must_contain:
+        - pattern: "done.*success.*true|success.*true"
+          description: "任务声明成功完成"
+    tool_selection:
+      trace_must_contain:
+        - pattern: "github.com|github"
+          description: "调用了 GitHub API"
+        - pattern: "pptx|Presentation"
+          description: "使用了 python-pptx"
+    param_accuracy:
+      pptx_checks:
+        - min_slides: 2
+        - slide_contains_keyword: ["mobile", "agent", "star", "Mobile", "Agent"]
+        - min_project_count: 3
+    no_hallucination:
+      cross_validate:
+        source: "trace中 GitHub API 返回的项目列表"
+        target: "PPT 中列出的项目名"
+        method: "PPT中 ≥60% 的项目名出现在 API 响应中"
+    efficiency:
+      max_steps: 6
+
+  C2:
+    name: 发票OCR→费用报表
+    max_steps: 6
+    completion:
+      files:
+        - glob: "*.xlsx"
+          alt_globs: ["*费用*.xlsx", "*expense*.xlsx", "*报表*.xlsx"]
+          min_size_kb: 2
+          parse: xlsx
+          min_rows: 3
+        - glob: "*.docx"
+          alt_globs: ["*费用*.docx", "*expense*.docx", "*汇总*.docx"]
+          min_size_kb: 2
+          parse: docx
+          min_paragraphs: 3
+      trace_must_contain:
+        - pattern: "done.*success.*true|success.*true"
+          description: "任务声明成功完成"
+    tool_selection:
+      trace_must_contain:
+        - pattern: "tesseract|ocr|OCR"
+          description: "调用了 OCR"
+        - pattern: "openpyxl|xlsx|Excel"
+          description: "生成了 Excel"
+        - pattern: "docx|Document"
+          description: "生成了 Word"
+    param_accuracy:
+      xlsx_checks:
+        - has_headers: true
+        - header_keywords: ["日期", "项目", "金额", "费用", "date", "amount", "item"]
+        - min_data_rows: 3
+    no_hallucination:
+      cross_validate:
+        source: "trace中 OCR 输出文本"
+        target: "Excel/Word 中引用的数据"
+        method: "Word 总金额 = Excel 各行金额之和 (允许模拟数据但需声明)"
+    efficiency:
+      max_steps: 6
+
+  C3:
+    name: 周报→加密PDF
+    max_steps: 12
+    completion:
+      files:
+        - glob: "*.xlsx"
+          alt_globs: ["*热搜*.xlsx", "*weekly*.xlsx", "*数据*.xlsx"]
+          min_size_kb: 2
+          parse: xlsx
+          min_rows: 5
+        - glob: "*.docx"
+          alt_globs: ["*周报*.docx", "*weekly*.docx", "*报告*.docx"]
+          min_size_kb: 2
+      trace_must_contain:
+        - pattern: "done.*success.*true|success.*true"
+          description: "任务声明成功完成"
+        - pattern: "加密|encrypt|report2026"
+          description: "trace 中提到了加密或密码"
+    tool_selection:
+      trace_must_contain:
+        - pattern: "weibo.com|热搜|hotSearch"
+          description: "调用了微博热搜 API"
+        - pattern: "openpyxl|xlsx|Workbook"
+          description: "生成了 Excel"
+        - pattern: "reportlab|canvas|VerticalBarChart|Drawing"
+          description: "生成了图表 PDF"
+        - pattern: "docx|Document"
+          description: "生成了 Word"
+        - pattern: "pypdf|PdfWriter|encrypt|merge"
+          description: "PDF 加密合并"
+    param_accuracy:
+      trace_checks:
+        - tool: "python_exec"
+          arg_contains: ["report2026"]
+    no_hallucination:
+      cross_validate:
+        source: "trace中微博 API 返回的热搜列表"
+        target: "Excel 中记录的热搜标题"
+        method: "Excel 中 ≥60% 的标题出现在 API 原始响应中"
+    efficiency:
+      max_steps: 12
+
+  C4:
+    name: 论文→立项报告
+    max_steps: 6
+    completion:
+      files:
+        - glob: "*.docx"
+          alt_globs: ["*proposal*.docx", "*立项*.docx", "*报告*.docx", "*论文*.docx"]
+          min_size_kb: 5
+          parse: docx
+          min_paragraphs: 8
+      trace_must_contain:
+        - pattern: "done.*success.*true|success.*true"
+          description: "任务声明成功完成"
+    tool_selection:
+      trace_must_contain:
+        - pattern: "arxiv"
+          description: "调用了 arxiv API"
+        - pattern: "docx|Document"
+          description: "生成了 Word"
+    param_accuracy:
+      docx_checks:
+        - must_contain_sections: ["背景|background", "相关工作|related|论文", "技术路线|technical|方案"]
+        - min_paper_count: 3
+    no_hallucination:
+      cross_validate:
+        source: "trace中 arxiv API 返回的论文列表"
+        target: "Word 中列出的论文标题"
+        method: "Word 中的论文标题 ≥60% 能在 arxiv 响应中找到"
+    efficiency:
+      max_steps: 6
+
+  C5:
+    name: 餐厅→地图→通知
+    max_steps: 8
+    completion:
+      trace_must_contain:
+        - pattern: "show_map"
+          description: "发起了地图 intent"
+        - pattern: "termux-notification|notification"
+          description: "发送了通知"
+    tool_selection:
+      trace_must_contain:
+        - pattern: "show_map"
+          description: "使用了 show_map 工具"
+        - pattern: "termux-notification|notification"
+          description: "使用了 notification"
+    param_accuracy:
+      trace_checks:
+        - tool: "show_map"
+          arg_contains: ["火锅|餐厅|海底捞|巴奴|小龙坎|朝阳"]
+        - tool: "termux-notification|notification|shell_exec"
+          arg_contains: ["餐厅|火锅|导航|找到"]
+    no_hallucination:
+      method: "llm_judge"
+      question: "推荐的餐厅名是否为真实存在的北京餐厅（非编造地址）？"
+    efficiency:
+      max_steps: 8
+
+  C6:
+    name: 证件照→PDF排版
+    max_steps: 6
+    completion:
+      files:
+        - glob: "*.jpg"
+          alt_globs: ["*证件*.jpg", "*id_photo*.jpg", "*photo*.jpg", "*.png"]
+          min_size_kb: 1
+        - glob: "*.pdf"
+          alt_globs: ["*证件*.pdf", "*id_photo*.pdf", "*排版*.pdf", "*A4*.pdf"]
+          min_size_kb: 5
+      trace_must_contain:
+        - pattern: "done.*success.*true|success.*true"
+          description: "任务声明成功完成"
+        - pattern: "295.*413|413.*295|一寸"
+          description: "trace 中提到了证件照尺寸"
+    tool_selection:
+      trace_must_contain:
+        - pattern: "Pillow|PIL|resize|Image"
+          description: "使用了 Pillow 处理图片"
+        - pattern: "reportlab|pypdf|pdf|canvas"
+          description: "生成了 PDF"
+    param_accuracy:
+      trace_checks:
+        - tool: "python_exec"
+          arg_contains: ["295|413"]
+        - tool: "python_exec"
+          arg_contains: ["50|compress|quality"]
+    no_hallucination:
+      method: "file_verify"
+      checks:
+        - "PDF 文件大小 > 5KB (确认嵌入了图片，非空白页)"
+    efficiency:
+      max_steps: 6
+
+  C7:
+    name: 短信→报告→通知
+    max_steps: 7
+    completion:
+      files:
+        - glob: "*.docx"
+          alt_globs: ["*sms*.docx", "*短信*.docx", "*report*.docx"]
+          min_size_kb: 2
+          parse: docx
+          min_paragraphs: 3
+      trace_must_contain:
+        - pattern: "termux-notification|notification"
+          description: "发送了通知"
+    tool_selection:
+      trace_must_contain:
+        - pattern: "termux-sms-list|sms"
+          description: "获取了短信列表"
+        - pattern: "docx|Document"
+          description: "生成了 Word"
+        - pattern: "termux-notification|notification"
+          description: "发送了通知"
+    param_accuracy:
+      trace_checks:
+        - tool: "shell_exec"
+          arg_contains: ["termux-sms-list|sms"]
+        - tool: "termux-notification|notification|shell_exec"
+          arg_contains: ["短信|完成|整理|sms"]
+    no_hallucination:
+      cross_validate:
+        source: "trace中 sms-list 返回内容"
+        target: "Word 报告中的短信摘要"
+        method: "如果 sms-list 为空，agent 应声明使用模拟数据"
+    efficiency:
+      max_steps: 7
+
+  C8:
+    name: GPS→天气→通知
+    max_steps: 10
+    completion:
+      trace_must_contain:
+        - pattern: "termux-location|location|GPS|gps"
+          description: "获取了位置"
+        - pattern: "wttr.in|天气|weather|温度|temp"
+          description: "查询了天气"
+        - pattern: "termux-notification|notification"
+          description: "发送了通知"
+    tool_selection:
+      trace_must_contain:
+        - pattern: "termux-location|location"
+          description: "使用了 termux-location"
+        - pattern: "requests|http|wttr|curl|天气"
+          description: "调用了天气 API"
+        - pattern: "termux-notification|notification"
+          description: "发送了通知"
+    param_accuracy:
+      trace_checks:
+        - tool: "termux-notification|notification|shell_exec"
+          arg_contains: ["天气|温度|°|出行|建议|weather"]
+    no_hallucination:
+      cross_validate:
+        source: "trace中天气 API 返回的温度数值"
+        target: "通知 content 中的温度"
+        method: "通知中提到的温度值 ±3°C 内匹配 API 返回"
+    efficiency:
+      max_steps: 10
+
+  C9:
+    name: 舆情→PPT
+    max_steps: 8
+    completion:
+      files:
+        - glob: "*.xlsx"
+          alt_globs: ["*sentiment*.xlsx", "*舆情*.xlsx", "*热搜*.xlsx", "*数据*.xlsx"]
+          min_size_kb: 2
+          parse: xlsx
+          min_rows: 5
+        - glob: "*.pdf"
+          alt_globs: ["*chart*.pdf", "*饼图*.pdf", "*sentiment*.pdf", "*情感*.pdf"]
+          min_size_kb: 1
+        - glob: "*.pptx"
+          alt_globs: ["*sentiment*.pptx", "*舆情*.pptx", "*简报*.pptx"]
+          min_size_kb: 5
+          parse: pptx
+          min_slides: 3
+      trace_must_contain:
+        - pattern: "done.*success.*true|success.*true"
+          description: "任务声明成功完成"
+    tool_selection:
+      trace_must_contain:
+        - pattern: "weibo.com|热搜|hotSearch"
+          description: "调用了微博热搜 API"
+        - pattern: "openpyxl|xlsx|Workbook"
+          description: "生成了 Excel"
+        - pattern: "reportlab|canvas|pie|Pie|Drawing"
+          description: "生成了饼图"
+        - pattern: "pptx|Presentation"
+          description: "生成了 PPT"
+    param_accuracy:
+      pptx_checks:
+        - min_slides: 3
+        - slide_keywords: ["舆情|热搜|简报|sentiment|情感"]
+      xlsx_checks:
+        - min_data_rows: 5
+    no_hallucination:
+      cross_validate:
+        source: "trace中微博 API 返回的热搜列表"
+        target: "Excel 中记录的热搜标题"
+        method: "Excel 中 ≥60% 标题出现在 API 原始响应中"
+    efficiency:
+      max_steps: 8
+
+  C10:
+    name: 中文OCR→会议纪要→PDF
+    max_steps: 12
+    completion:
+      files:
+        - glob: "*.docx"
+          alt_globs: ["*meeting*.docx", "*会议*.docx", "*纪要*.docx", "*minutes*.docx"]
+          min_size_kb: 2
+          parse: docx
+          min_paragraphs: 5
+        - glob: "*.pdf"
+          alt_globs: ["*meeting*.pdf", "*会议*.pdf", "*纪要*.pdf", "*minutes*.pdf"]
+          min_size_kb: 2
+      trace_must_contain:
+        - pattern: "done.*success.*true|success.*true"
+          description: "任务声明成功完成"
+    tool_selection:
+      trace_must_contain:
+        - pattern: "tesseract|chi_sim|ocr|OCR"
+          description: "使用了中文 OCR"
+        - pattern: "docx|Document"
+          description: "生成了 Word"
+        - pattern: "reportlab|pypdf|pdf|canvas"
+          description: "生成了 PDF"
+    param_accuracy:
+      docx_checks:
+        - must_contain_sections: ["标题|会议|纪要|title", "日期|时间|date", "议题|决议|结论|内容"]
+    no_hallucination:
+      cross_validate:
+        source: "trace中 tesseract OCR 输出的原始文本"
+        target: "Word/PDF 中的会议内容"
+        method: "Word 内容与 OCR 输出有语义关联（非完全编造无关内容）"
+    efficiency:
+      max_steps: 12
+
+# ── 聚合指标计算 ──
+aggregate_metrics:
+  SR:
+    formula: "sum(completion == 1) / 10"
+    description: "任务完成率 (Success Rate)"
+  TSR:
+    formula: "sum(tool_selection == 1) / 10"
+    description: "工具选择正确率 (Tool Selection Rate)"
+  AES:
+    formula: "mean(steps_per_task)"
+    description: "平均执行步数 (Avg Execution Steps, 越低越好)"
+  ERR:
+    formula: "sum(recovered_errors) / sum(total_errors)"
+    description: "错误恢复率 (Error Recovery Rate)"

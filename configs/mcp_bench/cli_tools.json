@@ -1,0 +1,284 @@
+{
+  "description": "维度二：手机底层 CLI 工具注册表 (Termux:API + ADB + google/mobile-actions)",
+  "version": "0.1.0",
+  "tools": {
+    "create_calendar_event": {
+      "source": "google/mobile-actions",
+      "type": "function_call",
+      "description": "创建新的日历事件/提醒",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "title": {"type": "string", "description": "事件标题"},
+          "datetime": {"type": "string", "description": "事件日期时间, 格式 YYYY-MM-DDTHH:MM:SS"}
+        },
+        "required": ["title", "datetime"]
+      },
+      "cli_equivalent": "am start -a android.intent.action.INSERT -t vnd.android.cursor.item/event --es title {title} --el beginTime {datetime}"
+    },
+    "send_email": {
+      "source": "google/mobile-actions",
+      "type": "function_call",
+      "description": "发送电子邮件",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "subject": {"type": "string", "description": "邮件主题"},
+          "to": {"type": "string", "description": "收件人邮箱"},
+          "body": {"type": "string", "description": "邮件正文"}
+        },
+        "required": ["subject", "to"]
+      },
+      "cli_equivalent": "am start -a android.intent.action.SENDTO -d mailto:{to} --es android.intent.extra.SUBJECT {subject} --es android.intent.extra.TEXT {body}"
+    },
+    "create_contact": {
+      "source": "google/mobile-actions",
+      "type": "function_call",
+      "description": "在手机通讯录中创建联系人",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "first_name": {"type": "string", "description": "名字"},
+          "last_name": {"type": "string", "description": "姓氏"},
+          "phone_number": {"type": "string", "description": "电话号码"},
+          "email": {"type": "string", "description": "邮箱"}
+        },
+        "required": ["first_name", "last_name"]
+      },
+      "cli_equivalent": "am start -a android.intent.action.INSERT -t vnd.android.cursor.dir/contact --es name '{first_name} {last_name}' --es phone {phone_number} --es email {email}"
+    },
+    "show_map": {
+      "source": "google/mobile-actions",
+      "type": "function_call",
+      "description": "在地图上显示指定位置",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {"type": "string", "description": "要搜索的位置"}
+        },
+        "required": ["query"]
+      },
+      "cli_equivalent": "am start -a android.intent.action.VIEW -d \"geo:0,0?q={query}\""
+    },
+    "open_wifi_settings": {
+      "source": "google/mobile-actions",
+      "type": "function_call",
+      "description": "打开WiFi设置页面",
+      "parameters": {"type": "object", "properties": {}},
+      "cli_equivalent": "am start -a android.settings.WIFI_SETTINGS"
+    },
+    "turn_on_flashlight": {
+      "source": "google/mobile-actions",
+      "type": "function_call",
+      "description": "打开手电筒",
+      "parameters": {"type": "object", "properties": {}},
+      "cli_equivalent": "termux-torch on"
+    },
+    "turn_off_flashlight": {
+      "source": "google/mobile-actions",
+      "type": "function_call",
+      "description": "关闭手电筒",
+      "parameters": {"type": "object", "properties": {}},
+      "cli_equivalent": "termux-torch off"
+    },
+    "termux-camera-photo": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "调用摄像头拍照保存",
+      "command_template": "termux-camera-photo -c {camera_id} {output_file}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "camera_id": {"type": "integer", "description": "摄像头ID (0=后置, 1=前置)"},
+          "output_file": {"type": "string", "description": "输出文件路径"}
+        },
+        "required": ["output_file"]
+      }
+    },
+    "termux-sms-send": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "发送短信",
+      "command_template": "termux-sms-send -n {number} {text}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "number": {"type": "string", "description": "接收号码"},
+          "text": {"type": "string", "description": "短信内容"}
+        },
+        "required": ["number", "text"]
+      }
+    },
+    "termux-sms-list": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "列出收到的短信",
+      "command_template": "termux-sms-list -l {limit} -t {type}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "limit": {"type": "integer", "description": "返回条数"},
+          "type": {"type": "string", "enum": ["inbox", "sent", "draft", "all"], "description": "短信类型"}
+        }
+      }
+    },
+    "termux-telephony-call": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "拨打电话",
+      "command_template": "termux-telephony-call {number}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "number": {"type": "string", "description": "要拨打的号码"}
+        },
+        "required": ["number"]
+      }
+    },
+    "termux-contact-list": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "列出所有联系人",
+      "command_template": "termux-contact-list",
+      "parameters": {"type": "object", "properties": {}}
+    },
+    "termux-location": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "获取GPS定位",
+      "command_template": "termux-location -p {provider}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "provider": {"type": "string", "enum": ["gps", "network", "passive"], "description": "定位方式"}
+        }
+      }
+    },
+    "termux-clipboard-get": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "获取剪贴板内容",
+      "command_template": "termux-clipboard-get",
+      "parameters": {"type": "object", "properties": {}}
+    },
+    "termux-clipboard-set": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "设置剪贴板内容",
+      "command_template": "termux-clipboard-set {text}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "text": {"type": "string", "description": "要复制到剪贴板的文本"}
+        },
+        "required": ["text"]
+      }
+    },
+    "termux-notification": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "发送通知",
+      "command_template": "termux-notification --title {title} --content {content}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "title": {"type": "string", "description": "通知标题"},
+          "content": {"type": "string", "description": "通知内容"}
+        },
+        "required": ["title", "content"]
+      }
+    },
+    "termux-battery-status": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "获取电池状态",
+      "command_template": "termux-battery-status",
+      "parameters": {"type": "object", "properties": {}}
+    },
+    "termux-wifi-connectioninfo": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "获取WiFi连接信息",
+      "command_template": "termux-wifi-connectioninfo",
+      "parameters": {"type": "object", "properties": {}}
+    },
+    "termux-vibrate": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "手机震动",
+      "command_template": "termux-vibrate -d {duration}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "duration": {"type": "integer", "description": "震动时长(毫秒)"}
+        }
+      }
+    },
+    "termux-tts-speak": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "文字转语音",
+      "command_template": "termux-tts-speak {text}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "text": {"type": "string", "description": "要朗读的文本"}
+        },
+        "required": ["text"]
+      }
+    },
+    "termux-brightness": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "设置屏幕亮度",
+      "command_template": "termux-brightness {value}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "value": {"type": "integer", "description": "亮度值 0-255"}
+        },
+        "required": ["value"]
+      }
+    },
+    "termux-volume": {
+      "source": "termux-api",
+      "type": "cli",
+      "description": "设置系统音量",
+      "command_template": "termux-volume {stream} {volume}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "stream": {"type": "string", "enum": ["music", "ring", "alarm", "notification"]},
+          "volume": {"type": "integer", "description": "音量值"}
+        },
+        "required": ["stream", "volume"]
+      }
+    },
+    "screencap": {
+      "source": "adb",
+      "type": "cli",
+      "description": "截屏保存到指定路径（需要用 /sdcard/ 路径）",
+      "command_template": "screencap -p {output_file}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "output_file": {"type": "string", "description": "输出文件路径（建议 /sdcard/screenshot.png）"}
+        },
+        "required": ["output_file"]
+      }
+    },
+    "input_text": {
+      "source": "adb",
+      "type": "cli",
+      "description": "ADB模拟输入文本",
+      "command_template": "input text {text}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "text": {"type": "string", "description": "要输入的文本"}
+        },
+        "required": ["text"]
+      }
+    }
+  }
+}

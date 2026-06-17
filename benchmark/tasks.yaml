@@ -1,0 +1,178 @@
+# PhoneHarness Benchmark — 10 Unified Evaluation Tasks
+# 3-model comparison: doubao-2.0-pro / gemini-3.1-pro / glm-5
+#
+# 设计原则:
+#   - 每条只说"做什么"，不说"怎么做"
+#   - 不提工具名、不提库名、不给 URL
+#   - 平均 4+ 跳，覆盖 CLI / Skill / API / Intent 四类维度
+#   - 跨维度组合任务占 60%
+
+tasks:
+  - id: C1
+    name: 竞品调研→PPT
+    prompt: "搜索GitHub上mobile agent相关的star最多的5个项目，做一份竞品调研PPT保存到home目录"
+    difficulty: medium
+    expected_hops: 3-4
+    dimensions: [api, skill]
+    expected_tool_chain:
+      - "python_exec: requests → GitHub API 搜索"
+      - "python_exec: python-pptx 生成 PPT"
+    expected_outputs:
+      - pattern: "competitor_analysis.pptx"
+        min_size_kb: 5
+
+  - id: C2
+    name: 发票OCR→费用报表
+    prompt: "对 ~/ocr_test_en.png 做OCR识别，提取出费用信息，生成Excel费用报表和Word费用汇总，保存到home目录"
+    difficulty: medium
+    expected_hops: 3-4
+    dimensions: [cli, skill]
+    expected_tool_chain:
+      - "shell_exec: tesseract OCR"
+      - "python_exec: openpyxl 生成 Excel"
+      - "python_exec: python-docx 生成 Word"
+    expected_outputs:
+      - pattern: "expense_report.xlsx"
+        min_size_kb: 2
+      - pattern: "expense_summary.docx"
+        min_size_kb: 2
+
+  - id: C3
+    name: 周报→加密PDF
+    prompt: "抓取微博热搜前10条，生成Excel数据表+柱状图PDF+周报Word，最后合并成一个加密PDF（密码report2026），保存到home目录"
+    difficulty: hard
+    expected_hops: 5-6
+    dimensions: [api, skill, skill, skill, skill]
+    expected_tool_chain:
+      - "python_exec: requests → 微博热搜 API"
+      - "python_exec: openpyxl 生成 Excel"
+      - "python_exec: reportlab 生成柱状图 PDF"
+      - "python_exec: python-docx 生成周报 Word"
+      - "python_exec: pypdf 合并+加密 PDF"
+    expected_outputs:
+      - pattern: "*.xlsx"
+        min_size_kb: 2
+        description: "热搜数据表"
+      - pattern: "*chart*.pdf"
+        min_size_kb: 1
+        description: "柱状图"
+      - pattern: "*weekly*.docx"
+        min_size_kb: 2
+        description: "周报Word"
+      - pattern: "*final*.pdf"
+        min_size_kb: 5
+        description: "加密合并PDF"
+        encrypted: true
+        password: "report2026"
+
+  - id: C4
+    name: 论文→立项报告
+    prompt: "搜索arxiv上mobile agent相关最新5篇论文，生成一份Word立项报告（含研究背景、相关工作、技术路线），保存到home目录"
+    difficulty: medium
+    expected_hops: 3-4
+    dimensions: [api, skill]
+    expected_tool_chain:
+      - "python_exec: requests → arxiv API"
+      - "python_exec: python-docx 生成 Word"
+    expected_outputs:
+      - pattern: "project_proposal.docx"
+        min_size_kb: 5
+
+  - id: C5
+    name: 餐厅→地图→通知
+    prompt: "帮我找北京朝阳区附近的火锅店，选一家最好的在地图上显示，然后发termux通知告诉我结果"
+    difficulty: medium
+    expected_hops: 4-5
+    dimensions: [api, intent, cli]
+    expected_tool_chain:
+      - "python_exec 或 show_map: 搜索/推荐餐厅"
+      - "show_map: 地图显示"
+      - "shell_exec: termux-notification"
+    expected_outputs: []  # 无文件产物，检查 trace
+
+  - id: C6
+    name: 证件照→PDF排版
+    prompt: "把 ~/ocr_test_en.png 处理成一寸证件照(295x413)，再生成一版50%压缩的，最后做一个A4的PDF排6张证件照，保存到home目录"
+    difficulty: medium
+    expected_hops: 3-4
+    dimensions: [skill, skill, skill]
+    expected_tool_chain:
+      - "python_exec: Pillow resize → 295x413"
+      - "python_exec: Pillow compress → 50% quality"
+      - "python_exec: reportlab/pypdf → A4 PDF 排版"
+    expected_outputs:
+      - pattern: "id_photo.jpg"
+        min_size_kb: 1
+        check_dimensions: [295, 413]
+      - pattern: "id_photo_compressed.jpg"
+        min_size_kb: 0.5
+        must_be_smaller_than: "id_photo.jpg"
+      - pattern: "id_photos.pdf"
+        min_size_kb: 10
+
+  - id: C7
+    name: 短信→报告→通知
+    prompt: "获取最近5条短信，提取关键信息（验证码/快递单号等），生成Word整理报告，然后发termux通知提醒整理完成"
+    difficulty: medium
+    expected_hops: 4
+    dimensions: [cli, skill, cli]
+    expected_tool_chain:
+      - "shell_exec: termux-sms-list"
+      - "python_exec: 信息提取 + python-docx"
+      - "shell_exec: termux-notification"
+    expected_outputs:
+      - pattern: "sms_report.docx"
+        min_size_kb: 2
+
+  - id: C8
+    name: GPS→天气→通知
+    prompt: "获取当前GPS位置，查询今天天气，生成出行建议，发termux通知提醒"
+    difficulty: medium
+    expected_hops: 4
+    dimensions: [cli, api, cli]
+    expected_tool_chain:
+      - "shell_exec: termux-location"
+      - "python_exec: requests → 天气API"
+      - "shell_exec: termux-notification"
+    expected_outputs: []  # 无文件产物，检查 trace
+
+  - id: C9
+    name: 舆情→PPT
+    prompt: "抓取微博热搜前10条，分析情感倾向，生成Excel数据+饼图PDF+舆情简报PPT（3页），保存到home目录"
+    difficulty: hard
+    expected_hops: 4-5
+    dimensions: [api, skill, skill, skill]
+    expected_tool_chain:
+      - "python_exec: requests → 微博热搜"
+      - "python_exec: openpyxl 生成 Excel"
+      - "python_exec: reportlab 生成饼图"
+      - "python_exec: python-pptx 生成 PPT"
+    expected_outputs:
+      - pattern: "sentiment_data.xlsx"
+        min_size_kb: 2
+      - pattern: "sentiment_chart.pdf"
+        min_size_kb: 1
+      - pattern: "sentiment_brief.pptx"
+        min_size_kb: 5
+
+  - id: C10
+    name: 中文OCR→会议纪要→PDF
+    prompt: "对 ~/ocr_test_zh.png 做中文OCR，整理成结构化的会议纪要Word和PDF版本，保存到home目录"
+    difficulty: hard
+    expected_hops: 4-5
+    dimensions: [cli, skill, skill]
+    expected_tool_chain:
+      - "shell_exec: tesseract -l chi_sim+eng"
+      - "python_exec: python-docx 生成 Word"
+      - "python_exec: reportlab 生成 PDF"
+    expected_outputs:
+      - pattern: "meeting_minutes.docx"
+        min_size_kb: 2
+      - pattern: "meeting_minutes.pdf"
+        min_size_kb: 2
+
+# ── 汇总统计 ──
+# 维度分布: CLI×6, API×5, Skill×17, Intent×1
+# 难度分布: medium×7, hard×3
+# 平均期望跳数: 4.0
+# 跨维度任务: 7/10 (70%)
